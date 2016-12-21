@@ -1,0 +1,209 @@
+/**
+ * The MIT License
+ * 
+ * Copyright (C) 2016 Kiyofumi Kondoh
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
+
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
+#include "../kk-win-lib-namedpipe.h"
+
+#include "kk-win-lib-checker-memory-operation-mismatch.h"
+#include "kk-win-lib-checker-memory-operation-mismatch-client.h"
+
+#include "kk-win-lib-checker-memory-operation-mismatch-hook-iat.h"
+
+
+#include "kk-win-lib-checker-memory-operation-mismatch-internal.h"
+
+#include <assert.h>
+
+
+namespace kk
+{
+
+namespace checker
+{
+
+MemoryOperationMismatchClient::MemoryOperationMismatchClient()
+{
+    ZeroMemory( mCRTOffsetIAT, sizeof(mCRTOffsetIAT) );
+}
+
+MemoryOperationMismatchClient::~MemoryOperationMismatchClient()
+{
+    this->term();
+}
+
+bool
+MemoryOperationMismatchClient::term(void)
+{
+    bool result = false;
+
+    result = MemoryOperationMismatch::term();
+
+    {
+        const bool bRet = unhookMemoryOperationMismatchIAT();
+    }
+
+    ZeroMemory( mCRTOffsetIAT, sizeof(mCRTOffsetIAT) );
+
+    return result;
+}
+
+
+bool
+MemoryOperationMismatchClient::init(const bool actionDoBreak)
+{
+    this->term();
+
+    mDoBreak = actionDoBreak;
+
+    this->mNamedPipe.openClient( szNamedPiepeName, kk::NamedPipe::kModeFullDuplex );
+
+    return true;
+}
+
+bool
+MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
+{
+    bool result = false;
+    {
+        packetProcessId     packet;
+        ZeroMemory( &packet, sizeof(packet) );
+
+        packet.header.size = sizeof(packet.data);
+        packet.header.mode = kModeProcessId;
+
+        packet.data.processId = processId;
+
+        size_t sendedSize = 0;
+        const bool bRet = this->mNamedPipe.send( (const char*)&packet, sizeof(packet), sendedSize );
+        if ( !bRet )
+        {
+            return false;
+        }
+    }
+
+    {
+        packetCRTModule     module;
+        ZeroMemory( &module, sizeof(module) );
+        size_t recvedSize = 0;
+        const bool bRet = this->mNamedPipe.recv( (char *)&module, sizeof(module), recvedSize );
+        result = bRet;
+        if ( bRet )
+        {
+            mCRTOffsetIAT[kIndexOperationMalloc]    = module.data.dwMalloc;
+            mCRTOffsetIAT[kIndexOperationFree]      = module.data.dwFree;
+            mCRTOffsetIAT[kIndexOperationCalloc]    = module.data.dwCalloc;
+            mCRTOffsetIAT[kIndexOperationRealloc]   = module.data.dwRealloc;
+            mCRTOffsetIAT[kIndexOperationNew]           = module.data.dwNew;
+            mCRTOffsetIAT[kIndexOperationDelete]        = module.data.dwDelete;
+            mCRTOffsetIAT[kIndexOperationNewArray]      = module.data.dwNewArray;
+            mCRTOffsetIAT[kIndexOperationDeleteArray]   = module.data.dwDeleteArray;
+            mCRTOffsetIAT[kIndexOperationAlignedMalloc]     = module.data.dwAlignedMalloc;
+            mCRTOffsetIAT[kIndexOperationAlignedFree]       = module.data.dwAlignedFree;
+            mCRTOffsetIAT[kIndexOperationAlignedReCalloc]   = module.data.dwAlignedReCalloc;
+            mCRTOffsetIAT[kIndexOperationAlignedRealloc]    = module.data.dwAlignedRealloc;
+
+        }
+    }
+
+    {
+        const HMODULE hModule = ::GetModuleHandleA( NULL );
+        const bool bRet = hookMemoryOperationMismatchIAT( hModule, this );
+        result = bRet;
+    }
+
+    return result;
+}
+
+
+bool
+MemoryOperationMismatchClient::sendOperation(
+    const enumMemoryOperation operation
+    , const DWORD64 pointer
+)
+{
+    bool result = false;
+    {
+        packetMemoryOperation   packet;
+        ZeroMemory( &packet, sizeof(packet) );
+
+        packet.header.size = sizeof(packet.data);
+        packet.header.mode = kModeMemoryOperation;
+
+        packet.data.funcMemoryOperation = operation;
+        packet.data.pointer = pointer;
+
+        size_t sendedSize = 0;
+        const bool bRet = this->mNamedPipe.send( (const char*)&packet, sizeof(packet), sendedSize );
+        if ( !bRet )
+        {
+            return false;
+        }
+    }
+
+    {
+        packetAction    action;
+        ZeroMemory( &action, sizeof(action) );
+        size_t recvedSize = 0;
+        const bool bRet = this->mNamedPipe.recv( (char *)&action, sizeof(action), recvedSize );
+        if ( bRet )
+        {
+            if ( kActionBreak == action.data.action )
+            {
+                if ( mDoBreak )
+                {
+                    ::DebugBreak();
+                }
+            }
+        }
+        result = bRet;
+    }
+
+    return result;
+}
+
+
+bool
+MemoryOperationMismatchClient::getCRTOffsetIAT(
+    DWORD64 CRTOffsetIAT[MemoryOperationMismatch::kIndexOperationMAX]
+) const
+{
+    for ( size_t index = 0; index < kIndexOperationMAX; ++index )
+    {
+        CRTOffsetIAT[index] = this->mCRTOffsetIAT[index];
+    }
+
+    return true;
+}
+
+
+
+
+
+
+} // namespace checker
+
+} // namespace kk
+
