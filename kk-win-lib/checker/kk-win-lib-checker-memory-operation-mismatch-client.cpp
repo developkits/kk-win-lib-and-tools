@@ -47,6 +47,7 @@ namespace checker
 MemoryOperationMismatchClient::MemoryOperationMismatchClient()
 {
     ZeroMemory( mCRTOffsetIAT, sizeof(mCRTOffsetIAT) );
+    mUseHookIAT = true;
 }
 
 MemoryOperationMismatchClient::~MemoryOperationMismatchClient()
@@ -61,11 +62,13 @@ MemoryOperationMismatchClient::term(void)
 
     result = MemoryOperationMismatch::term();
 
+    if ( mUseHookIAT )
     {
         const bool bRet = unhookMemoryOperationMismatchIAT();
     }
 
     ZeroMemory( mCRTOffsetIAT, sizeof(mCRTOffsetIAT) );
+    mUseHookIAT = true;
 
     return result;
 }
@@ -128,6 +131,7 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
         }
     }
 
+    if ( mUseHookIAT )
     {
         const HMODULE hModule = ::GetModuleHandleA( NULL );
         const bool bRet = hookMemoryOperationMismatchIAT( hModule, this );
@@ -199,6 +203,22 @@ MemoryOperationMismatchClient::getCRTOffsetIAT(
 }
 
 
+bool
+MemoryOperationMismatchClient::disableHookIAT( const bool disableHook )
+{
+    const bool oldValue = mUseHookIAT;
+
+    if ( disableHook )
+    {
+        mUseHookIAT = false;
+    }
+    else
+    {
+        mUseHookIAT = true;
+    }
+
+    return oldValue;
+}
 
 
 

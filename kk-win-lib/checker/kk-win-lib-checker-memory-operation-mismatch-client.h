@@ -58,6 +58,13 @@ public:
 protected:
     DWORD64             mCRTOffsetIAT[kIndexOperationMAX];
 
+public:
+    bool
+    disableHookIAT( const bool disableHook );
+
+protected:
+    bool                mUseHookIAT;
+
 private:
     explicit MemoryOperationMismatchClient(const MemoryOperationMismatchClient&);
     MemoryOperationMismatchClient& operator=(const MemoryOperationMismatchClient&);
