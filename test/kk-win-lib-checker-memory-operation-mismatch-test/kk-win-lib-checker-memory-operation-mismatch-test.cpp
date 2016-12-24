@@ -470,7 +470,6 @@ int _tmain(int argc, _TCHAR* argv[])
   size_t loopCount = 1024*5;
   for ( size_t loop = 0; loop < loopCount; ++loop )
   {
-#if 0
     {
         kk::checker::MemoryOperationMismatchServer  server;
         kk::checker::MemoryOperationMismatchClient  client;
@@ -479,6 +478,7 @@ int _tmain(int argc, _TCHAR* argv[])
         server.init(true);
         server.serverStart();
         client.init(true);
+        client.disableHookIAT( true );
 
         {
             const DWORD processId = ::GetCurrentProcessId();
@@ -497,6 +497,7 @@ int _tmain(int argc, _TCHAR* argv[])
         server.init(false);
         server.serverStart();
         client.init(true);
+        client.disableHookIAT( true );
 
         {
             const DWORD processId = ::GetCurrentProcessId();
@@ -506,7 +507,6 @@ int _tmain(int argc, _TCHAR* argv[])
             client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationFree, 0x8 );
         }
     }
-#endif
 
     {
         kk::checker::MemoryOperationMismatchServer  server;
