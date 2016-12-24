@@ -474,11 +474,31 @@
 				Name="checker"
 				>
 				<File
+					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-client.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-client.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-iat.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-iat.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-internal.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-server.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-server.h"
 					>
 				</File>
 				<File

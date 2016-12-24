@@ -33,6 +33,8 @@
 #include "../../kk-win-lib/kk-win-lib-event.h"
 #include "../../kk-win-lib/kk-win-lib-namedpipe.h"
 #include "../../kk-win-lib/checker/kk-win-lib-checker-memory-operation-mismatch.h"
+#include "../../kk-win-lib/checker/kk-win-lib-checker-memory-operation-mismatch-client.h"
+#include "../../kk-win-lib/checker/kk-win-lib-checker-memory-operation-mismatch-server.h"
 
 #include "../../kk-win-lib/kk-win-lib-remote-process.h"
 #include "../../kk-win-lib/kk-win-lib-debug-symbol.h"
@@ -468,15 +470,14 @@ int _tmain(int argc, _TCHAR* argv[])
   size_t loopCount = 1024*5;
   for ( size_t loop = 0; loop < loopCount; ++loop )
   {
-
     {
-        kk::checker::MemoryOperationMismatch   server;
-        kk::checker::MemoryOperationMismatch   client;
+        kk::checker::MemoryOperationMismatchServer  server;
+        kk::checker::MemoryOperationMismatchClient  client;
         kk::Event       evt;
 
-        server.initServer(true);
+        server.init(true);
         server.serverStart();
-        client.initClient();
+        client.init(true);
 
         {
             const DWORD processId = ::GetCurrentProcessId();
@@ -488,13 +489,13 @@ int _tmain(int argc, _TCHAR* argv[])
     }
 
     {
-        kk::checker::MemoryOperationMismatch   server;
-        kk::checker::MemoryOperationMismatch   client;
+        kk::checker::MemoryOperationMismatchServer  server;
+        kk::checker::MemoryOperationMismatchClient  client;
         kk::Event       evt;
 
-        server.initServer(false);
+        server.init(false);
         server.serverStart();
-        client.initClient();
+        client.init(true);
 
         {
             const DWORD processId = ::GetCurrentProcessId();
