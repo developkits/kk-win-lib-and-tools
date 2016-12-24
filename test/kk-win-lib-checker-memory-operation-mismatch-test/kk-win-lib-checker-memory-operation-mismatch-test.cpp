@@ -470,6 +470,7 @@ int _tmain(int argc, _TCHAR* argv[])
   size_t loopCount = 1024*5;
   for ( size_t loop = 0; loop < loopCount; ++loop )
   {
+#if 0
     {
         kk::checker::MemoryOperationMismatchServer  server;
         kk::checker::MemoryOperationMismatchClient  client;
@@ -503,6 +504,27 @@ int _tmain(int argc, _TCHAR* argv[])
 
             client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationMalloc, 0x4 );
             client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationFree, 0x8 );
+        }
+    }
+#endif
+
+    {
+        kk::checker::MemoryOperationMismatchServer  server;
+        kk::checker::MemoryOperationMismatchClient  client;
+        kk::Event       evt;
+
+        server.init(false);
+        server.serverStart();
+        client.init(true);
+
+        {
+            const DWORD processId = ::GetCurrentProcessId();
+            client.sendProcessId( processId );
+
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationFree, 0x0 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationDelete, 0x0 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationDeleteArray, 0x0 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedFree, 0x0 );
         }
     }
 
