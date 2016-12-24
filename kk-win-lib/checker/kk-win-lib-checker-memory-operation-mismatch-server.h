@@ -65,6 +65,14 @@ protected:
 protected:
     DWORD64             mCRTOffsetIAT[kIndexOperationMAX];
 
+
+public:
+    bool
+    setBreakDeallocNull( const bool needBreak );
+
+protected:
+    bool                mNeedBreakDeallocNull;
+
 private:
     explicit MemoryOperationMismatchServer(const MemoryOperationMismatchServer&);
     MemoryOperationMismatchServer& operator=(const MemoryOperationMismatchServer&);

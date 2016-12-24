@@ -53,6 +53,7 @@ namespace checker
 MemoryOperationMismatchServer::MemoryOperationMismatchServer()
 {
     mDoBreak = true;
+    mNeedBreakDeallocNull = false;
 }
 
 MemoryOperationMismatchServer::~MemoryOperationMismatchServer()
@@ -70,6 +71,7 @@ MemoryOperationMismatchServer::term(void)
     this->serverStop();
 
     mDoBreak = true;
+    mNeedBreakDeallocNull = false;
 
     return result;
 }
@@ -85,6 +87,18 @@ MemoryOperationMismatchServer::init(const bool actionDoBreak)
     this->mNamedPipe.openServer( szNamedPiepeName, kk::NamedPipe::kModeFullDuplex, 1, 1024 );
 
     return true;
+}
+
+
+
+bool
+MemoryOperationMismatchServer::setBreakDeallocNull( const bool needBreak )
+{
+    bool oldValue = mNeedBreakDeallocNull;
+
+    mNeedBreakDeallocNull = needBreak;
+
+    return oldValue;
 }
 
 
@@ -537,31 +551,14 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     {
                         bool negative = false;
 
-                        mapRecord::iterator it = mapMemory.find( memory.pointer );
-                        if ( mapMemory.end() == it )
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakDeallocNull )
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
-                            {
-                                action.data.action = kActionBreak;
-                            }
-                            else
-                            {
-                                action.data.action = kActionNone;
-                            }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
+                            // skip
                         }
                         else
                         {
-                            if (
-                                !(kOperationMalloc == it->second
-                                || kOperationCalloc == it->second
-                                || kOperationRealloc == it->second
-                                )
-                            )
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() == it )
                             {
                                 // error
                                 action.header.size = sizeof(action);
@@ -577,7 +574,31 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
-                            mapMemory.erase( it );
+                            else
+                            {
+                                if (
+                                    !(kOperationMalloc == it->second
+                                    || kOperationCalloc == it->second
+                                    || kOperationRealloc == it->second
+                                    )
+                                )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                                mapMemory.erase( it );
+                            }
                         }
 
                         if ( negative )
@@ -652,26 +673,14 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     {
                         bool negative = false;
 
-                        mapRecord::iterator it = mapMemory.find( memory.pointer );
-                        if ( mapMemory.end() == it )
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakDeallocNull )
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
-                            {
-                                action.data.action = kActionBreak;
-                            }
-                            else
-                            {
-                                action.data.action = kActionNone;
-                            }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
+                            // skip
                         }
                         else
                         {
-                            if ( kOperationNew != it->second )
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() == it )
                             {
                                 // error
                                 action.header.size = sizeof(action);
@@ -687,7 +696,26 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
-                            mapMemory.erase( it );
+                            else
+                            {
+                                if ( kOperationNew != it->second )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                                mapMemory.erase( it );
+                            }
                         }
 
                         if ( negative )
@@ -708,49 +736,56 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     {
                         bool negative = false;
 
-                        mapRecord::iterator it = mapMemory.find( memory.pointer );
-                        if ( mapMemory.end() == it )
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakDeallocNull )
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
-                            {
-                                action.data.action = kActionBreak;
-                            }
-                            else
-                            {
-                                action.data.action = kActionNone;
-                            }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
+                            // skip
                         }
                         else
                         {
-                            if ( kOperationNewArray != it->second )
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() == it )
                             {
-                                if ( luckNewArray )
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
                                 {
-                                    // warn?
+                                    action.data.action = kActionBreak;
                                 }
                                 else
                                 {
-                                    // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
+                            }
+                            else
+                            {
+                                if ( kOperationNewArray != it->second )
+                                {
+                                    if ( luckNewArray )
                                     {
-                                        action.data.action = kActionBreak;
+                                        // warn?
                                     }
                                     else
                                     {
-                                        action.data.action = kActionNone;
+                                        // error
+                                        action.header.size = sizeof(action);
+                                        action.header.mode = kModeAction;
+                                        if ( pThis->mDoBreak )
+                                        {
+                                            action.data.action = kActionBreak;
+                                        }
+                                        else
+                                        {
+                                            action.data.action = kActionNone;
+                                        }
+                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        negative = true;
                                     }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                                    negative = true;
                                 }
+                                mapMemory.erase( it );
                             }
-                            mapMemory.erase( it );
                         }
 
                         if ( negative )
@@ -826,32 +861,14 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     {
                         bool negative = false;
 
-                        mapRecord::iterator it = mapMemory.find( memory.pointer );
-                        if ( mapMemory.end() == it )
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakDeallocNull )
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
-                            {
-                                action.data.action = kActionBreak;
-
-                            }
-                            else
-                            {
-                                action.data.action = kActionNone;
-                            }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
+                            // skip
                         }
                         else
                         {
-                            if (
-                                !(kOperationAlignedMalloc == it->second
-                                || kOperationAlignedRecalloc == it->second
-                                || kOperationAlignedRealloc == it->second
-                                )
-                            )
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() == it )
                             {
                                 // error
                                 action.header.size = sizeof(action);
@@ -859,6 +876,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( pThis->mDoBreak )
                                 {
                                     action.data.action = kActionBreak;
+
                                 }
                                 else
                                 {
@@ -867,7 +885,31 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
-                            mapMemory.erase( it );
+                            else
+                            {
+                                if (
+                                    !(kOperationAlignedMalloc == it->second
+                                    || kOperationAlignedRecalloc == it->second
+                                    || kOperationAlignedRealloc == it->second
+                                    )
+                                )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                                mapMemory.erase( it );
+                            }
                         }
 
                         if ( negative )
