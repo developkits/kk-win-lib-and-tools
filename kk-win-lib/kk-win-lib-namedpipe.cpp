@@ -249,6 +249,10 @@ NamedPipe::waitClient( void )
         if ( !BRet )
         {
             const DWORD dwErr = ::GetLastError();
+            if ( ERROR_PIPE_CONNECTED == dwErr )
+            {
+                result = true;
+            }
         }
         else
         {
