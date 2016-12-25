@@ -54,6 +54,7 @@ MemoryOperationMismatchServer::MemoryOperationMismatchServer()
 {
     mDoBreak = true;
     mNeedBreakDeallocNull = false;
+    mNeedBreakAllocNull = false;
 }
 
 MemoryOperationMismatchServer::~MemoryOperationMismatchServer()
@@ -72,6 +73,7 @@ MemoryOperationMismatchServer::term(void)
 
     mDoBreak = true;
     mNeedBreakDeallocNull = false;
+    mNeedBreakAllocNull = false;
 
     return result;
 }
@@ -499,40 +501,47 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     {
                         bool negative = false;
 
-                        mapRecord::iterator it = mapMemory.find( memory.pointer );
-                        if ( mapMemory.end() != it )
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakAllocNull )
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
-                            {
-                                action.data.action = kActionBreak;
-                            }
-                            else
-                            {
-                                action.data.action = kActionNone;
-                            }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
+                            // skip
                         }
-                        pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
-                        std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
-                        if ( false == ret.second )
+                        else
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() != it )
                             {
-                                action.data.action = kActionBreak;
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
                             }
-                            else
+                            pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
+                            std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
+                            if ( false == ret.second )
                             {
-                                action.data.action = kActionNone;
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
                             }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
                         }
 
                         if ( negative )
@@ -620,40 +629,47 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     {
                         bool negative = false;
 
-                        mapRecord::iterator it = mapMemory.find( memory.pointer );
-                        if ( mapMemory.end() != it )
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakAllocNull )
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
-                            {
-                                action.data.action = kActionBreak;
-                            }
-                            else
-                            {
-                                action.data.action = kActionNone;
-                            }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
+                            // skip
                         }
-                        pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
-                        std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
-                        if ( false == ret.second )
+                        else
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() != it )
                             {
-                                action.data.action = kActionBreak;
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
                             }
-                            else
+                            pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
+                            std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
+                            if ( false == ret.second )
                             {
-                                action.data.action = kActionNone;
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
                             }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
                         }
 
                         if ( negative )
@@ -809,40 +825,47 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     {
                         bool negative = false;
 
-                        mapRecord::iterator it = mapMemory.find( memory.pointer );
-                        if ( mapMemory.end() != it )
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakAllocNull )
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
-                            {
-                                action.data.action = kActionBreak;
-                            }
-                            else
-                            {
-                                action.data.action = kActionNone;
-                            }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
+                            // skip
                         }
-                        pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
-                        std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
-                        if ( false == ret.second )
+                        else
                         {
-                            // error
-                            action.header.size = sizeof(action);
-                            action.header.mode = kModeAction;
-                            if ( pThis->mDoBreak )
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() != it )
                             {
-                                action.data.action = kActionBreak;
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
                             }
-                            else
+                            pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
+                            std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
+                            if ( false == ret.second )
                             {
-                                action.data.action = kActionNone;
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
                             }
-                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                            negative = true;
                         }
 
                         if ( negative )

@@ -70,8 +70,12 @@ public:
     bool
     setBreakDeallocNull( const bool needBreak );
 
+    bool
+    setBreakAllocNull( const bool needBreak );
+
 protected:
     bool                mNeedBreakDeallocNull;
+    bool                mNeedBreakAllocNull;
 
 private:
     explicit MemoryOperationMismatchServer(const MemoryOperationMismatchServer&);
