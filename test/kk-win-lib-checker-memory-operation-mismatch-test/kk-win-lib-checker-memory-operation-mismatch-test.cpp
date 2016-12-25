@@ -354,6 +354,29 @@ mySymEnumSymbolsProc(
             }
 #endif
 
+#if 1
+            if ( isArgSingle )
+            {
+                IMAGEHLP_LINE64     line;
+                line.SizeOfStruct = sizeof(line);
+                DWORD dwDisplacement = 0;
+
+                const BOOL BRet = ::SymGetLineFromAddr64( context->hProcess, pSymInfo->Address, &dwDisplacement, &line );
+                if ( !BRet )
+                {
+                    const DWORD dwErr = ::GetLastError();
+                }
+                else
+                {
+                    {
+                        char    buff[1024];
+                        ::wsprintfA( buff, "  %s(%u)\n", line.FileName, line.LineNumber );
+                        ::OutputDebugStringA( buff );
+                    }
+                }
+            }
+#endif
+
             ::OutputDebugStringA( "" );
 
 
@@ -396,6 +419,7 @@ testEnum(void)
     opt |= SYMOPT_DEFERRED_LOADS;
     opt &= (~SYMOPT_UNDNAME);
     //opt |= SYMOPT_NO_CPP;
+    opt |= SYMOPT_LOAD_LINES;
     ::SymSetOptions( opt );
     ::SymInitialize( hProcess, NULL, TRUE );
 
