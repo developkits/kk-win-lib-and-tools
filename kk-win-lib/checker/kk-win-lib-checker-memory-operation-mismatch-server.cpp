@@ -165,7 +165,8 @@ MemoryOperationMismatchServer::serverStart( void )
 
     hThread = (HANDLE)::_beginthreadex( NULL, 0, this->threadServer, this, 0, NULL );
 
-    return false;
+    const bool result = (NULL != hThread)?(true):(false);
+    return result;
 }
 
 bool
