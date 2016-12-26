@@ -107,7 +107,7 @@ static
 void*
 my_realloc(void* p, size_t size)
 {
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationFree, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationReallocFree, (DWORD64)p );
 
     void* result = pfn_realloc( p, size );
 
@@ -215,7 +215,7 @@ static
 void*
 my_aligned_realloc(void* p, size_t size, size_t align)
 {
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationAlignedFree, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationAlignedReallocFree, (DWORD64)p );
 
     void* result = pfn_aligned_realloc( p, size, align );
 
@@ -228,7 +228,7 @@ static
 void*
 my_aligned_recalloc(void* p, size_t num, size_t size, size_t align)
 {
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationAlignedFree, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationAlignedRecallocFree, (DWORD64)p );
 
     void* result = pfn_aligned_recalloc( p, num, size, align );
 

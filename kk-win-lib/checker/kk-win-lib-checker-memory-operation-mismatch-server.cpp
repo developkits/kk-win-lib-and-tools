@@ -558,6 +558,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     break;
 
                 case kOperationFree:
+                case kOperationReallocFree:
                     {
                         bool negative = false;
 
@@ -882,6 +883,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     break;
 
                 case kOperationAlignedFree:
+                case kOperationAlignedRecallocFree:
+                case kOperationAlignedReallocFree:
                     {
                         bool negative = false;
 
@@ -900,7 +903,6 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( pThis->mDoBreak )
                                 {
                                     action.data.action = kActionBreak;
-
                                 }
                                 else
                                 {

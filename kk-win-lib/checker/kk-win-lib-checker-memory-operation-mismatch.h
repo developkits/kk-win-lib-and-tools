@@ -53,6 +53,7 @@ public:
         , kOperationFree = 2
         , kOperationCalloc = 3
         , kOperationRealloc = 4
+        , kOperationReallocFree = 5
 
         , kOperationNew = 10
         , kOperationDelete = 11
@@ -63,6 +64,8 @@ public:
         , kOperationAlignedFree = 21
         , kOperationAlignedRealloc = 22
         , kOperationAlignedRecalloc = 23
+        , kOperationAlignedReallocFree = 24
+        , kOperationAlignedRecallocFree = 25
 
     };
 
