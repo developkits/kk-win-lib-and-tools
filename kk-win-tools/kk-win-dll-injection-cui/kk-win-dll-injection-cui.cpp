@@ -263,8 +263,20 @@ int main(int argc, char* argv[])
             continue;
         }
 
-        ::lstrcatA( szCmd, pArg );
+        ::lstrcatA( szCmd, " " );
+        if ( NULL == ::strchr( pArg, ' ' ) )
+        {
+            ::lstrcatA( szCmd, pArg );
+        }
+        else
+        {
+            ::lstrcatA( szCmd, "\"" );
+            ::lstrcatA( szCmd, pArg );
+            ::lstrcatA( szCmd, "\"" );
+        }
     }
+    //::OutputDebugStringA( ::GetCommandLineA() );
+    //::OutputDebugStringA( "\n" );
 
     HANDLE  hProcess = NULL;
     HANDLE  hThread = NULL;
