@@ -70,6 +70,12 @@ PFN_calloc      pfn_calloc = NULL;
 typedef void* (*PFN_realloc)(void* p, size_t size);
 PFN_realloc     pfn_realloc = NULL;
 
+typedef char* (*PFN_strdup)(const char* str);
+PFN_strdup      pfn_strdup = NULL;
+
+typedef wchar_t* (*PFN_wcsdup)(const wchar_t* str);
+PFN_wcsdup      pfn_wcsdup = NULL;
+
 static
 void*
 my_malloc(size_t size)
@@ -116,6 +122,27 @@ my_realloc(void* p, size_t size)
     return p;
 }
 
+static
+char*
+my_strdup(const char* str)
+{
+    char* p= pfn_strdup(str);
+
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationStrdup, (DWORD64)p );
+
+    return p;
+}
+
+static
+wchar_t*
+my_wcsdup(const wchar_t* str)
+{
+    wchar_t* p= pfn_wcsdup(str);
+
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationWcsdup, (DWORD64)p );
+
+    return p;
+}
 
 typedef void* (*PFN_new)(size_t size);
 PFN_new             pfn_new = NULL;
@@ -380,6 +407,18 @@ hookCRTbyIAT( const HMODULE hModule )
                     pfn_realloc = reinterpret_cast<kk::checker::PFN_realloc>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_realloc);
                 }
+                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationStrdup] )
+                {
+                    size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationStrdup]);
+                    pfn_strdup = reinterpret_cast<kk::checker::PFN_strdup>(*pIAT);
+                    *pIAT = reinterpret_cast<size_t>(my_strdup);
+                }
+                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationWcsdup] )
+                {
+                    size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationWcsdup]);
+                    pfn_wcsdup = reinterpret_cast<kk::checker::PFN_wcsdup>(*pIAT);
+                    *pIAT = reinterpret_cast<size_t>(my_wcsdup);
+                }
 
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew] )
                 {
@@ -605,6 +644,18 @@ unhookCRTbyIAT( void )
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationRealloc]);
                     *pIAT = reinterpret_cast<size_t>(pfn_realloc);
                     pfn_realloc = NULL;
+                }
+                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationStrdup] )
+                {
+                    size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationStrdup]);
+                    *pIAT = reinterpret_cast<size_t>(pfn_strdup);
+                    pfn_strdup = NULL;
+                }
+                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationWcsdup] )
+                {
+                    size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationWcsdup]);
+                    *pIAT = reinterpret_cast<size_t>(pfn_wcsdup);
+                    pfn_wcsdup = NULL;
                 }
 
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew] )

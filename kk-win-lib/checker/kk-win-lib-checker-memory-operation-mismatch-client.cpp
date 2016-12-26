@@ -119,6 +119,8 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
             mCRTOffsetIAT[kIndexOperationFree]      = module.data.dwFree;
             mCRTOffsetIAT[kIndexOperationCalloc]    = module.data.dwCalloc;
             mCRTOffsetIAT[kIndexOperationRealloc]   = module.data.dwRealloc;
+            mCRTOffsetIAT[kIndexOperationStrdup]   = module.data.dwStrdup;
+            mCRTOffsetIAT[kIndexOperationWcsdup]   = module.data.dwWcsdup;
             mCRTOffsetIAT[kIndexOperationNew]           = module.data.dwNew;
             mCRTOffsetIAT[kIndexOperationDelete]        = module.data.dwDelete;
             mCRTOffsetIAT[kIndexOperationNewArray]      = module.data.dwNewArray;

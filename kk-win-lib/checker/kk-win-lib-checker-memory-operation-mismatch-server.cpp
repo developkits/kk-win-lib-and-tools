@@ -272,6 +272,16 @@ fetchFunc( dataCRTModule& data, const size_t funcCount, const kk::PEIAT::IMPORT_
             data.dwRealloc = (DWORD64)func.addrRef;
         }
         else
+        if ( 0 == ::lstrcmpA( func.nameFunc, "_strdup" ) )
+        {
+            data.dwStrdup = (DWORD64)func.addrRef;
+        }
+        else
+        if ( 0 == ::lstrcmpA( func.nameFunc, "_wcsdup" ) )
+        {
+            data.dwWcsdup = (DWORD64)func.addrRef;
+        }
+        else
         if ( 0 == ::lstrcmpA( func.nameFunc, sFuncName_New ) )
         {
             data.dwNew = (DWORD64)func.addrRef;
@@ -459,6 +469,17 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
                         }
+#if defined(_DEBUG)
+                        else
+                        if ( 0 == ::lstrcmpiA(pFile, "msvcr120d.dll" ) )
+                        {
+                            HMODULE hModule = remoteProcess.findModule( "msvcr120d.dll" );
+                            module.data.module = (DWORD64)hModule;
+
+                            const size_t funcCount = funcCountFile[indexFile];
+                            fetchFunc( module.data, funcCount, funcFile[indexFile] );
+                        }
+#endif
                         else
                         if ( 0 == ::lstrcmpiA(pFile, "ucrtbase.dll" ) )
                         {
@@ -498,6 +519,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                 case kOperationMalloc:
                 case kOperationCalloc:
                 case kOperationRealloc:
+                case kOperationStrdup:
+                case kOperationWcsdup:
                     {
                         bool negative = false;
 
@@ -591,6 +614,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     !(kOperationMalloc == it->second
                                     || kOperationCalloc == it->second
                                     || kOperationRealloc == it->second
+                                    || kOperationStrdup == it->second
+                                    || kOperationWcsdup == it->second
                                     )
                                 )
                                 {

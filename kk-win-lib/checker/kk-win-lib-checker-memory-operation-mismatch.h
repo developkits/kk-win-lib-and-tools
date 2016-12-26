@@ -54,6 +54,8 @@ public:
         , kOperationCalloc = 3
         , kOperationRealloc = 4
         , kOperationReallocFree = 5
+        , kOperationStrdup = 6
+        , kOperationWcsdup = 7
 
         , kOperationNew = 10
         , kOperationDelete = 11
@@ -87,7 +89,10 @@ public:
         , kIndexOperationAlignedReCalloc = 10
         , kIndexOperationAlignedRealloc = 11
 
-        , kIndexOperationMAX = 12
+        , kIndexOperationStrdup = 12
+        , kIndexOperationWcsdup = 13
+
+        , kIndexOperationMAX = 14
     };
 
 protected:
