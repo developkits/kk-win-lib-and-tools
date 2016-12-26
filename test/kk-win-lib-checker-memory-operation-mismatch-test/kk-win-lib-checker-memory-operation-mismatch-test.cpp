@@ -552,6 +552,41 @@ int _tmain(int argc, _TCHAR* argv[])
         }
     }
 
+    {
+        kk::checker::MemoryOperationMismatchServer  server;
+        kk::checker::MemoryOperationMismatchClient  client;
+        kk::Event       evt;
+
+        server.init(false);
+        server.serverStart();
+        client.init(true);
+        client.disableHookIAT( true );
+
+        {
+            const DWORD processId = ::GetCurrentProcessId();
+            client.sendProcessId( processId );
+
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationRealloc, 0x4 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationReallocFree, 0x4 );
+
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedRealloc, 0x8 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedReallocFree, 0x8 );
+
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedRecalloc, 0xc );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedRecallocFree, 0xc );
+
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedMalloc, 0x10 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedReallocFree, 0x10 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedRealloc, 0x14 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedFree, 0x14 );
+
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedMalloc, 0x18 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedRecallocFree, 0x18 );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedRecalloc, 0x1c );
+            client.sendOperation( kk::checker::MemoryOperationMismatch::kOperationAlignedFree, 0x1c );
+        }
+    }
+
   } // loop
 
 
