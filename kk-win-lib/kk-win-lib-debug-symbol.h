@@ -60,6 +60,8 @@ public:
     bool
     getGlobalReplacementsRVA( const enumIndexOperation indexOperation, DWORD64* funcArray ) const;
 
+    bool
+    isIncludeCRTNewArray( void ) const;
 
 protected:
     class DebugSymbolImpl;

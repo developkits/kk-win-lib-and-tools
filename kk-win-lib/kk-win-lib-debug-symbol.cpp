@@ -987,6 +987,18 @@ DebugSymbol::getGlobalReplacementsRVA( const enumIndexOperation indexOperation, 
     return result;
 }
 
+bool
+DebugSymbol::isIncludeCRTNewArray( void ) const
+{
+    if ( NULL == mImpl )
+    {
+        return false;
+    }
+
+    const bool result = mImpl->isIncludeCRTNewArray();
+
+    return result;
+}
 
 
 
