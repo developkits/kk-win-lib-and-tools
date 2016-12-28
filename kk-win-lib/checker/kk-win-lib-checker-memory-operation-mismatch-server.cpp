@@ -31,6 +31,7 @@
 #include "../kk-win-lib-remote-process.h"
 #include "../kk-win-lib-remote-memory.h"
 #include "../kk-win-lib-pe-iat.h"
+#include "../kk-win-lib-debug-symbol.h"
 
 #include "kk-win-lib-checker-memory-operation-mismatch.h"
 #include "kk-win-lib-checker-memory-operation-mismatch-server.h"
@@ -492,6 +493,19 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     }
                 }
 
+                bool includeCRTNewArray = false;
+                {
+                    kk::DebugSymbol debugSymbol;
+                    debugSymbol.init( processId.processId );
+                    debugSymbol.findGlobalReplacements();
+                    includeCRTNewArray = debugSymbol.isIncludeCRTNewArray();
+                }
+
+                if ( includeCRTNewArray )
+                {
+                    luckNewArray = true;
+                }
+                else
                 {
                     if (
                         0 != module.data.dwNew
@@ -501,6 +515,9 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     )
                     {
                         luckNewArray = true;
+                        {
+                            ::OutputDebugStringA( "kk-win-lib-checker-memory-operation-mismatch: assume new[] redirected.\n" );
+                        }
                     }
                 }
 
