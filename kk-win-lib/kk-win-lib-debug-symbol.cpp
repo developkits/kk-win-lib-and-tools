@@ -310,26 +310,27 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
         }
 
         if (
-            0 == mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].size()
-            && 1 == mGlobalReplacements[DebugSymbol::kIndexOperationNew].size()
+            1 == mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].size()
+            //&& 0 == mGlobalReplacements[DebugSymbol::kIndexOperationNew].size()
         )
         {
             if ( !info.LineNumbers )
             {
                 {
-                    ::OutputDebugStringA( "debug symbol does not have line numbers info\n" );
+                    ::OutputDebugStringA( "kk-win-lib-debug-symbol: debug symbol does not have line numbers info\n" );
                 }
             }
             else
             {
-                std::set<DWORD64>::const_iterator   it = mGlobalReplacements[DebugSymbol::kIndexOperationNew].begin();
+                std::set<DWORD64>::const_iterator   it = mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].begin();
                 const DWORD64 qwAddr = *(it);
+
                 IMAGEHLP_LINE64     line;
                 ZeroMemory( &line, sizeof(line) );
                 line.SizeOfStruct = sizeof(line);
                 {
                     DWORD dwDisplacement = 0;
-                    const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, mModuleBase, &dwDisplacement, &line );
+                    const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, qwAddr, &dwDisplacement, &line );
                     if ( !BRet )
                     {
                         const DWORD dwErr = ::GetLastError();
