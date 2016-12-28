@@ -57,6 +57,7 @@ typedef DWORD64 (WINAPI *PFN_SymLoadModule64)(HANDLE hProcess, HANDLE hFile, PCS
 typedef BOOL (WINAPI *PFN_SymEnumSymbols)(HANDLE hProcess, ULONG64 BaseOfDll, PCSTR Mask, PSYM_ENUMERATESYMBOLS_CALLBACK EnumSymbolsCallback, PVOID UserContext);
 typedef BOOL (WINAPI *PFN_SymGetTypeInfo)(HANDLE hProcess, DWORD64 ModBase, ULONG TypeId, IMAGEHLP_SYMBOL_TYPE_INFO GetType, PVOID pInfo);
 typedef BOOL (WINAPI *PFN_SymGetModuleInfo64)(HANDLE hProcess, DWORD64 ModBase, PIMAGEHLP_MODULE64 ModuleInfo);
+typedef BOOL (WINAPI *PFN_SymGetLineFromAddr64)(HANDLE hProcess, DWORD64 qwAddr, DWORD* pdwDisplacement, PIMAGEHLP_LINE64 line);
 
 
 class DebugSymbol::DebugSymbolImpl
@@ -108,6 +109,7 @@ protected:
     PFN_SymEnumSymbols      mSymEnumSymbols;
     PFN_SymGetTypeInfo      mSymGetTypeInfo;
     PFN_SymGetModuleInfo64  mSymGetModuleInfo64;
+    PFN_SymGetLineFromAddr64    mSymGetLineFromAddr64;
 
     //DWORD64         mGlobalReplacements[4];
 
@@ -138,6 +140,7 @@ DebugSymbol::DebugSymbolImpl::DebugSymbolImpl()
     mSymEnumSymbols = NULL;
     mSymGetTypeInfo = NULL;
     mSymGetModuleInfo64 = NULL;
+    mSymGetLineFromAddr64 = NULL;
 
     //ZeroMemory( mGlobalReplacements, sizeof(mGlobalReplacements) );
     for ( size_t index = 0; index < kIndexOperationMax; ++index )
@@ -174,6 +177,7 @@ DebugSymbol::DebugSymbolImpl::term( void )
     mSymEnumSymbols = NULL;
     mSymGetTypeInfo = NULL;
     mSymGetModuleInfo64 = NULL;
+    mSymGetLineFromAddr64 = NULL;
 
     if ( NULL != mDbgHelp )
     {
@@ -222,6 +226,7 @@ DebugSymbol::DebugSymbolImpl::init( const HANDLE hProcess )
             mSymEnumSymbols = (PFN_SymEnumSymbols)::GetProcAddress( hModule, "SymEnumSymbols" );
             mSymGetTypeInfo = (PFN_SymGetTypeInfo)::GetProcAddress( hModule, "SymGetTypeInfo" );
             mSymGetModuleInfo64 = (PFN_SymGetModuleInfo64)::GetProcAddress( hModule, "SymGetModuleInfo64" );
+            mSymGetLineFromAddr64 = (PFN_SymGetLineFromAddr64)::GetProcAddress( hModule, "SymGetLineFromAddr64" );
 
         }
 
