@@ -276,7 +276,7 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
         }
 
         {
-            const BOOL BRet = mSymEnumSymbols( mHandleProcess, moduleBase, NULL, symEnumSymbolsProc, this );
+            const BOOL BRet = mSymEnumSymbols( mHandleProcess, mModuleBase, NULL, symEnumSymbolsProc, this );
             if ( !BRet )
             {
                 const DWORD dwErr = ::GetLastError();
