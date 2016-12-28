@@ -83,6 +83,9 @@ public:
     bool
     getGlobalReplacementsRVA( const enumIndexOperation indexOperation, DWORD64* funcArray ) const;
 
+    bool
+    isIncludeCRTNewArray( void ) const;
+
 protected:
     static
     BOOL
@@ -116,6 +119,7 @@ protected:
 protected:
 
     std::set<DWORD64>       mGlobalReplacements[DebugSymbol::kIndexOperationMax];
+    bool                    mIncludeCRTNewArray;
 
 private:
     explicit DebugSymbolImpl(const DebugSymbolImpl&);
@@ -147,6 +151,7 @@ DebugSymbol::DebugSymbolImpl::DebugSymbolImpl()
     {
         mGlobalReplacements[index].clear();
     }
+    mIncludeCRTNewArray = false;
 }
 
 DebugSymbol::DebugSymbolImpl::~DebugSymbolImpl()
@@ -195,6 +200,7 @@ DebugSymbol::DebugSymbolImpl::term( void )
     {
         mGlobalReplacements[index].clear();
     }
+    mIncludeCRTNewArray = false;
 
 
     mHandleProcess = NULL;
@@ -290,6 +296,72 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
 
     }
 
+    if ( NULL != this->mHandleProcess )
+    {
+        IMAGEHLP_MODULE64       info;
+        ZeroMemory( &info, sizeof(info) );
+        info.SizeOfStruct = sizeof(info);
+        {
+            const BOOL BRet = mSymGetModuleInfo64( mHandleProcess, mModuleBase, &info );
+            if ( !BRet )
+            {
+                const DWORD dwErr = ::GetLastError();
+            }
+        }
+
+        if (
+            0 == mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].size()
+            && 1 == mGlobalReplacements[DebugSymbol::kIndexOperationNew].size()
+        )
+        {
+            if ( !info.LineNumbers )
+            {
+                {
+                    ::OutputDebugStringA( "debug symbol does not have line numbers info\n" );
+                }
+            }
+            else
+            {
+                std::set<DWORD64>::const_iterator   it = mGlobalReplacements[DebugSymbol::kIndexOperationNew].begin();
+                const DWORD64 qwAddr = *(it);
+                IMAGEHLP_LINE64     line;
+                ZeroMemory( &line, sizeof(line) );
+                line.SizeOfStruct = sizeof(line);
+                {
+                    DWORD dwDisplacement = 0;
+                    const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, mModuleBase, &dwDisplacement, &line );
+                    if ( !BRet )
+                    {
+                        const DWORD dwErr = ::GetLastError();
+                    }
+                }
+
+                bool includeCRTNewArray = true;
+                if ( NULL == line.FileName )
+                {
+                    includeCRTNewArray = false;
+                }
+                else
+                {
+                    char    fileName[_MAX_PATH];
+                    ::lstrcpyA( fileName, line.FileName );
+                    ::_strlwr_s( fileName, sizeof(fileName)/sizeof(fileName[0]) );
+
+                    if ( NULL == ::strstr( fileName, "\\crt" ) )
+                    {
+                        includeCRTNewArray = false;
+                    }
+                    if ( NULL == ::strstr( fileName, "\\newaop" ) )
+                    {
+                        includeCRTNewArray = false;
+                    }
+                }
+                mIncludeCRTNewArray = includeCRTNewArray;
+            }
+        }
+    }
+
+
     return true;
 }
 
@@ -333,6 +405,11 @@ DebugSymbol::DebugSymbolImpl::getGlobalReplacementsRVA( const enumIndexOperation
     return true;
 }
 
+bool
+DebugSymbol::DebugSymbolImpl::isIncludeCRTNewArray( void ) const
+{
+    return mIncludeCRTNewArray;
+}
 
 
 
