@@ -283,6 +283,16 @@ fetchFunc( dataCRTModule& data, const size_t funcCount, const kk::PEIAT::IMPORT_
             data.dwWcsdup = (DWORD64)func.addrRef;
         }
         else
+        if ( 0 == ::lstrcmpA( func.nameFunc, "_recalloc" ) )
+        {
+            data.dwReCalloc = (DWORD64)func.addrRef;
+        }
+        else
+        if ( 0 == ::lstrcmpA( func.nameFunc, "_expand" ) )
+        {
+            data.dwExpand = (DWORD64)func.addrRef;
+        }
+        else
         if ( 0 == ::lstrcmpA( func.nameFunc, sFuncName_New ) )
         {
             data.dwNew = (DWORD64)func.addrRef;
@@ -538,6 +548,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                 case kOperationRealloc:
                 case kOperationStrdup:
                 case kOperationWcsdup:
+                case kOperationReCalloc:
+                case kOperationExpand:
                     {
                         bool negative = false;
 
@@ -599,6 +611,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
 
                 case kOperationFree:
                 case kOperationReallocFree:
+                case kOperationReCallocFree:
+                case kOperationExpandFree:
                     {
                         bool negative = false;
 
@@ -628,11 +642,14 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             else
                             {
                                 if (
-                                    !(kOperationMalloc == it->second
+                                    !
+                                    (kOperationMalloc == it->second
                                     || kOperationCalloc == it->second
                                     || kOperationRealloc == it->second
                                     || kOperationStrdup == it->second
                                     || kOperationWcsdup == it->second
+                                    || kOperationReCalloc == it->second
+                                    || kOperationExpand == it->second
                                     )
                                 )
                                 {

@@ -76,6 +76,12 @@ PFN_strdup      pfn_strdup = NULL;
 typedef wchar_t* (*PFN_wcsdup)(const wchar_t* str);
 PFN_wcsdup      pfn_wcsdup = NULL;
 
+typedef void* (*PFN_recalloc)(void* p, size_t num, size_t size);
+PFN_recalloc    pfn_recalloc = NULL;
+
+typedef void* (*PFN_expand)(void* p, size_t size);
+PFN_expand      pfn_expand = NULL;
+
 static
 void*
 my_malloc(size_t size)
@@ -143,6 +149,35 @@ my_wcsdup(const wchar_t* str)
 
     return p;
 }
+
+static
+void*
+my_recalloc(void* p, size_t num, size_t size)
+{
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationReCallocFree, (DWORD64)p );
+
+    void* result = pfn_recalloc( p, num, size );
+
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationReCalloc, (DWORD64)result );
+
+    return result;
+}
+
+static
+void*
+my_expand(void* p, size_t size)
+{
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationExpandFree, (DWORD64)p );
+
+    void* result = pfn_expand( p, size );
+
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationExpand, (DWORD64)result );
+
+    return result;
+}
+
+
+
 
 typedef void* (*PFN_new)(size_t size);
 PFN_new             pfn_new = NULL;
@@ -419,6 +454,18 @@ hookCRTbyIAT( const HMODULE hModule )
                     pfn_wcsdup = reinterpret_cast<kk::checker::PFN_wcsdup>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_wcsdup);
                 }
+                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationReCalloc] )
+                {
+                    size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationReCalloc]);
+                    pfn_recalloc = reinterpret_cast<kk::checker::PFN_recalloc>(*pIAT);
+                    *pIAT = reinterpret_cast<size_t>(my_recalloc);
+                }
+                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationExpand] )
+                {
+                    size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationExpand]);
+                    pfn_expand = reinterpret_cast<kk::checker::PFN_expand>(*pIAT);
+                    *pIAT = reinterpret_cast<size_t>(my_expand);
+                }
 
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew] )
                 {
@@ -657,6 +704,18 @@ unhookCRTbyIAT( void )
                     *pIAT = reinterpret_cast<size_t>(pfn_wcsdup);
                     pfn_wcsdup = NULL;
                 }
+                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationReCalloc] )
+                {
+                    size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationReCalloc]);
+                    *pIAT = reinterpret_cast<size_t>(pfn_recalloc);
+                    pfn_recalloc = NULL;
+                }
+                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationExpand] )
+                {
+                    size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationExpand]);
+                    *pIAT = reinterpret_cast<size_t>(pfn_expand);
+                    pfn_expand = NULL;
+                }
 
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew] )
                 {
@@ -765,6 +824,8 @@ unhookCRTbyIAT( void )
     pfn_free= NULL;
     pfn_calloc= NULL;
     pfn_realloc = NULL;
+    pfn_recalloc = NULL;
+    pfn_expand = NULL;
 
     pfn_new = NULL;
     pfn_delete = NULL;

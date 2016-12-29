@@ -84,6 +84,8 @@ struct dataCRTModule
     DWORD64     dwRealloc;
     DWORD64     dwStrdup;
     DWORD64     dwWcsdup;
+    DWORD64     dwReCalloc;
+    DWORD64     dwExpand;
 
     DWORD64     dwNew;
     DWORD64     dwDelete;

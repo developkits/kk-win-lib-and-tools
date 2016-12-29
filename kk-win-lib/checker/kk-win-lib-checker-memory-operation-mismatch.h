@@ -56,18 +56,22 @@ public:
         , kOperationReallocFree = 5
         , kOperationStrdup = 6
         , kOperationWcsdup = 7
+        , kOperationReCalloc = 8
+        , kOperationReCallocFree = 9
+        , kOperationExpand = 10
+        , kOperationExpandFree = 11
 
-        , kOperationNew = 10
-        , kOperationDelete = 11
-        , kOperationNewArray = 12
-        , kOperationDeleteArray = 13
+        , kOperationNew = 0x20+0
+        , kOperationDelete = 0x20+1
+        , kOperationNewArray = 0x20+2
+        , kOperationDeleteArray = 0x20+3
 
-        , kOperationAlignedMalloc = 20
-        , kOperationAlignedFree = 21
-        , kOperationAlignedRealloc = 22
-        , kOperationAlignedRecalloc = 23
-        , kOperationAlignedReallocFree = 24
-        , kOperationAlignedRecallocFree = 25
+        , kOperationAlignedMalloc = 0x40+0
+        , kOperationAlignedFree = 0x40+1
+        , kOperationAlignedRealloc = 0x40+2
+        , kOperationAlignedRecalloc = 0x40+3
+        , kOperationAlignedReallocFree = 0x40+4
+        , kOperationAlignedRecallocFree = 0x40+5
 
     };
 
@@ -91,8 +95,10 @@ public:
 
         , kIndexOperationStrdup = 12
         , kIndexOperationWcsdup = 13
+        , kIndexOperationReCalloc = 14
+        , kIndexOperationExpand = 15
 
-        , kIndexOperationMAX = 14
+        , kIndexOperationMAX = 16
     };
 
 protected:
