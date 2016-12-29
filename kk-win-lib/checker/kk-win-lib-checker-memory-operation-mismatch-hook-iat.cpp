@@ -119,7 +119,7 @@ my_realloc(void* p, size_t size)
 
     sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationRealloc, (DWORD64)result );
 
-    return p;
+    return result;
 }
 
 static
