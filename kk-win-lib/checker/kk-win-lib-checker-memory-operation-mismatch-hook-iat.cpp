@@ -59,27 +59,35 @@ sMemoryOperationMismatch = NULL;
 
 
 typedef void* (*PFN_malloc)(size_t size);
+static
 PFN_malloc      pfn_malloc = NULL;
 
 typedef void (*PFN_free)(void* p);
+static
 PFN_free        pfn_free = NULL;
 
 typedef void* (*PFN_calloc)(size_t num, size_t size);
+static
 PFN_calloc      pfn_calloc = NULL;
 
 typedef void* (*PFN_realloc)(void* p, size_t size);
+static
 PFN_realloc     pfn_realloc = NULL;
 
 typedef char* (*PFN_strdup)(const char* str);
+static
 PFN_strdup      pfn_strdup = NULL;
 
 typedef wchar_t* (*PFN_wcsdup)(const wchar_t* str);
+static
 PFN_wcsdup      pfn_wcsdup = NULL;
 
 typedef void* (*PFN_recalloc)(void* p, size_t num, size_t size);
+static
 PFN_recalloc    pfn_recalloc = NULL;
 
 typedef void* (*PFN_expand)(void* p, size_t size);
+static
 PFN_expand      pfn_expand = NULL;
 
 static
@@ -180,15 +188,19 @@ my_expand(void* p, size_t size)
 
 
 typedef void* (*PFN_new)(size_t size);
+static
 PFN_new             pfn_new = NULL;
 
 typedef void (*PFN_delete)(void* p);
+static
 PFN_delete          pfn_delete = NULL;
 
 typedef void* (*PFN_new_array)(size_t size);
+static
 PFN_new_array       pfn_new_array = NULL;
 
 typedef void (*PFN_delete_array)(void* p);
+static
 PFN_delete_array    pfn_delete_array = NULL;
 
 
@@ -238,15 +250,19 @@ my_delete_array( void* p )
 
 
 typedef void* (*PFN_aligned_malloc)(size_t size,size_t align);
+static
 PFN_aligned_malloc      pfn_aligned_malloc = NULL;
 
 typedef void (*PFN_aligned_free)(void* p);
+static
 PFN_aligned_free        pfn_aligned_free = NULL;
 
 typedef void* (*PFN_aligned_realloc)(void* p, size_t size, size_t align);
+static
 PFN_aligned_realloc     pfn_aligned_realloc = NULL;
 
 typedef void* (*PFN_aligned_recalloc)(void* p, size_t num, size_t size, size_t align);
+static
 PFN_aligned_recalloc    pfn_aligned_recalloc = NULL;
 
 
