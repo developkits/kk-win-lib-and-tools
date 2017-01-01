@@ -323,7 +323,7 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
             else
             {
                 std::set<DWORD64>::const_iterator   it = mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].begin();
-                const DWORD64 qwAddr = *(it);
+                const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + *(it) );
 
                 IMAGEHLP_LINE64     line;
                 ZeroMemory( &line, sizeof(line) );
@@ -823,7 +823,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
 
             if ( isArgSingle )
             {
-
+                const DWORD64   addr = pSymInfo->Address - dwModuleBase;
                 switch ( enmOperation )
                 {
                 case kOperationNew:
@@ -832,7 +832,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                         if ( kDataTypeUInt == enmTypeArg0 )
                         {
                             std::pair<std::set<DWORD64>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNew].insert( pSymInfo->Address );
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNew].insert( addr );
                             assert( true == ret.second );
                         }
                     }
@@ -843,7 +843,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                         if ( kDataTypeUInt == enmTypeArg0 )
                         {
                             std::pair<std::set<DWORD64>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].insert( pSymInfo->Address );
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].insert( addr );
                             assert( true == ret.second );
                         }
                     }
@@ -854,7 +854,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                         if ( kDataTypeVoidPointer == enmTypeArg0 )
                         {
                             std::pair<std::set<DWORD64>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDelete].insert( pSymInfo->Address );
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDelete].insert( addr );
                             assert( true == ret.second );
                         }
                     }
@@ -865,7 +865,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                         if ( kDataTypeVoidPointer == enmTypeArg0 )
                         {
                             std::pair<std::set<DWORD64>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArray].insert( pSymInfo->Address );
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArray].insert( addr );
                             assert( true == ret.second );
                         }
                     }
