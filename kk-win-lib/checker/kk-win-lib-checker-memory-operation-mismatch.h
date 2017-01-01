@@ -98,7 +98,9 @@ public:
         , kIndexOperationReCalloc = 14
         , kIndexOperationExpand = 15
 
-        , kIndexOperationMAX = 16
+        , kIndexOperationCRTNewAOP = 16
+
+        , kIndexOperationMAX = 17
     };
 
 protected:

@@ -97,6 +97,8 @@ struct dataCRTModule
     DWORD64     dwAlignedFree;
     DWORD64     dwAlignedReCalloc;
     DWORD64     dwAlignedRealloc;
+
+    DWORD64     dwExeCRTNewArray;
 };
 
 struct packetCRTModule

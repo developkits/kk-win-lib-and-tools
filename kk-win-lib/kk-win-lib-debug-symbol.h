@@ -63,6 +63,9 @@ public:
     bool
     isIncludeCRTNewArray( void ) const;
 
+    DWORD64
+    getCRTNewArrayRVA( void ) const;
+
 protected:
     class DebugSymbolImpl;
     DebugSymbolImpl*    mImpl;

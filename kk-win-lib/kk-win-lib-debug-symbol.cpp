@@ -1001,6 +1001,22 @@ DebugSymbol::isIncludeCRTNewArray( void ) const
     return result;
 }
 
+DWORD64
+DebugSymbol::getCRTNewArrayRVA( void ) const
+{
+    DWORD64 rva = 0;
+
+    if ( isIncludeCRTNewArray() )
+    {
+        const bool bRet = this->getGlobalReplacementsRVA( DebugSymbol::kIndexOperationNewArray, &rva );
+        if ( !bRet )
+        {
+            rva = 0;
+        }
+    }
+
+    return rva;
+}
 
 
 

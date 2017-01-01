@@ -509,11 +509,18 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     debugSymbol.init( processId.processId );
                     debugSymbol.findGlobalReplacements();
                     includeCRTNewArray = debugSymbol.isIncludeCRTNewArray();
+                    if ( includeCRTNewArray )
+                    {
+                        module.data.dwExeCRTNewArray = debugSymbol.getCRTNewArrayRVA();
+                    }
                 }
 
                 if ( includeCRTNewArray )
                 {
-                    luckNewArray = true;
+                    if ( 0 == module.data.dwExeCRTNewArray )
+                    {
+                        luckNewArray = true;
+                    }
                 }
                 else
                 {

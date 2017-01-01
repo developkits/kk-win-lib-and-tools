@@ -1,7 +1,7 @@
 /**
  * The MIT License
  * 
- * Copyright (C) 2016 Kiyofumi Kondoh
+ * Copyright (C) 2017 Kiyofumi Kondoh
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,53 +27,16 @@
 namespace kk
 {
 
-namespace checker {
+class MemoryOperationMismatchClient;
 
-class MemoryOperationMismatchClient : public MemoryOperationMismatch
+namespace checker
 {
-public:
-    MemoryOperationMismatchClient();
-    virtual ~MemoryOperationMismatchClient();
 
-public:
-    virtual
-    bool
-    init( const bool actionDoBreak );
+bool
+hookMemoryOperationMismatchCRTNewAOP( const HMODULE hModule, MemoryOperationMismatchClient* pMOM );
 
-    virtual
-    bool
-    term( void );
-
-public:
-    bool
-    sendProcessId( const DWORD processId );
-
-    bool
-    sendOperation( const enumMemoryOperation operation, const DWORD64 pointer );
-
-
-    bool
-    getCRTOffsetIAT( DWORD64 CRTOffsetIAT[kIndexOperationMAX] ) const;
-
-protected:
-    DWORD64             mCRTOffsetIAT[kIndexOperationMAX];
-
-public:
-    bool
-    disableHookIAT( const bool disableHook );
-
-    bool
-    disableHookCRTNewArray( const bool disableHook );
-
-protected:
-    bool                mUseHookIAT;
-    bool                mUseHookCRTNewArray;
-
-private:
-    explicit MemoryOperationMismatchClient(const MemoryOperationMismatchClient&);
-    MemoryOperationMismatchClient& operator=(const MemoryOperationMismatchClient&);
-}; // class MemoryOperationMismatchClient
-
+bool
+unhookMemoryOperationMismatchCRTNewAOP( void );
 
 } // namespace checker
 

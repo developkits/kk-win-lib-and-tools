@@ -31,6 +31,7 @@
 #include "kk-win-lib-checker-memory-operation-mismatch-client.h"
 
 #include "kk-win-lib-checker-memory-operation-mismatch-hook-iat.h"
+#include "kk-win-lib-checker-memory-operation-mismatch-hook-crtnewaop.h"
 
 
 #include "kk-win-lib-checker-memory-operation-mismatch-internal.h"
@@ -48,6 +49,7 @@ MemoryOperationMismatchClient::MemoryOperationMismatchClient()
 {
     ZeroMemory( mCRTOffsetIAT, sizeof(mCRTOffsetIAT) );
     mUseHookIAT = true;
+    mUseHookCRTNewArray = true;
 }
 
 MemoryOperationMismatchClient::~MemoryOperationMismatchClient()
@@ -62,6 +64,11 @@ MemoryOperationMismatchClient::term(void)
 
     result = MemoryOperationMismatch::term();
 
+    if ( mUseHookCRTNewArray )
+    {
+        const bool bRet = unhookMemoryOperationMismatchCRTNewAOP();
+    }
+
     if ( mUseHookIAT )
     {
         const bool bRet = unhookMemoryOperationMismatchIAT();
@@ -69,6 +76,7 @@ MemoryOperationMismatchClient::term(void)
 
     ZeroMemory( mCRTOffsetIAT, sizeof(mCRTOffsetIAT) );
     mUseHookIAT = true;
+    mUseHookCRTNewArray = true;
 
     return result;
 }
@@ -131,8 +139,16 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
             mCRTOffsetIAT[kIndexOperationAlignedFree]       = module.data.dwAlignedFree;
             mCRTOffsetIAT[kIndexOperationAlignedReCalloc]   = module.data.dwAlignedReCalloc;
             mCRTOffsetIAT[kIndexOperationAlignedRealloc]    = module.data.dwAlignedRealloc;
+            mCRTOffsetIAT[kIndexOperationCRTNewAOP]         = module.data.dwExeCRTNewArray;
 
         }
+    }
+
+    if ( mUseHookCRTNewArray )
+    {
+        const HMODULE hModule = ::GetModuleHandleA( NULL );
+        const bool bRet = hookMemoryOperationMismatchCRTNewAOP( hModule, this );
+        result = bRet;
     }
 
     if ( mUseHookIAT )
@@ -224,6 +240,22 @@ MemoryOperationMismatchClient::disableHookIAT( const bool disableHook )
     return oldValue;
 }
 
+bool
+MemoryOperationMismatchClient::disableHookCRTNewArray( const bool disableHook )
+{
+    const bool oldValue = mUseHookCRTNewArray;
+
+    if ( disableHook )
+    {
+        mUseHookCRTNewArray = false;
+    }
+    else
+    {
+        mUseHookCRTNewArray = true;
+    }
+
+    return oldValue;
+}
 
 
 

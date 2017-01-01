@@ -503,6 +503,7 @@ int _tmain(int argc, _TCHAR* argv[])
         server.serverStart();
         client.init(true);
         client.disableHookIAT( true );
+        client.disableHookCRTNewArray( true );
 
         {
             const DWORD processId = ::GetCurrentProcessId();
@@ -522,6 +523,7 @@ int _tmain(int argc, _TCHAR* argv[])
         server.serverStart();
         client.init(true);
         client.disableHookIAT( true );
+        client.disableHookCRTNewArray( true );
 
         {
             const DWORD processId = ::GetCurrentProcessId();
@@ -561,6 +563,7 @@ int _tmain(int argc, _TCHAR* argv[])
         server.serverStart();
         client.init(true);
         client.disableHookIAT( true );
+        client.disableHookCRTNewArray( true );
 
         {
             const DWORD processId = ::GetCurrentProcessId();
