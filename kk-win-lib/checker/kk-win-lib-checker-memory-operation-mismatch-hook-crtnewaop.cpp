@@ -162,23 +162,48 @@ hookCRTNewAOP( const HMODULE hModule )
         maxOffset = minOffset + sizeof(sHookJump);
     }
 
-#if defined(_M_X64)
     {
-        const BYTE* p = reinterpret_cast<BYTE*>(hModule);
-        const BYTE* pAddr = &p[minOffset];
-        for ( size_t index = sizeof(NearJump); index < sizeof(HookJump); ++index )
-        {
-            const BYTE  c = pAddr[index];
-            if ( 0x90 == c || 0xcc == c )
-            {
-                continue;
-            }
+        bool haveSpace = false;
 
-            // no space
+        const DWORD64 funcSize = sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOPSize];
+        if ( sizeof(HookJump) < funcSize )
+        {
+            haveSpace = true;
+        }
+
+        if ( false == haveSpace )
+        {
+#if defined(_M_IX86)
+            assert(false);
+#endif // defined(_M_IX86)
+#if defined(_M_X64)
+            haveSpace = true;
+            {
+                const BYTE* p = reinterpret_cast<BYTE*>(hModule);
+                const BYTE* pAddr = &p[minOffset];
+                for ( size_t index = sizeof(NearJump); index < sizeof(HookJump); ++index )
+                {
+                    const BYTE  c = pAddr[index];
+                    if ( 0x90 == c || 0xcc == c )
+                    {
+                        continue;
+                    }
+
+                    // no space
+                    haveSpace = false;
+                    break;
+                }
+            }
+#endif // defined(_M_X64)
+        }
+
+        if ( false == haveSpace )
+        {
             return false;
         }
     }
-#endif // defined(_M_X64)
+
+
 
     {
         assert( sizeof(size_t) == sizeof(void*) );

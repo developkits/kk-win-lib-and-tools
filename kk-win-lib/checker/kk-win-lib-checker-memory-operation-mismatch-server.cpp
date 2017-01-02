@@ -511,7 +511,17 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     includeCRTNewArray = debugSymbol.isIncludeCRTNewArray();
                     if ( includeCRTNewArray )
                     {
-                        module.data.dwExeCRTNewArray = debugSymbol.getCRTNewArrayRVA();
+                        kk::DebugSymbol::FuncInfo   funcInfo;
+                        ZeroMemory( &funcInfo, sizeof(funcInfo) );
+                        const bool bRet = debugSymbol.getCRTNewArrayRVA( &funcInfo );
+                        if ( bRet )
+                        {
+                            module.data.dwExeCRTNewArray = funcInfo.dwAddr;
+                            module.data.dwExeCRTNewArraySize = funcInfo.size;
+                        }
+                        else
+                        {
+                        }
                     }
                 }
 

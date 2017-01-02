@@ -54,17 +54,23 @@ public:
         , kIndexOperationMax = 4
     };
 
+    struct FuncInfo
+    {
+        DWORD64     dwAddr;
+        DWORD64     size;
+    };
+
     bool
     getGlobalReplacementsCount( size_t count[kIndexOperationMax] ) const;
 
     bool
-    getGlobalReplacementsRVA( const enumIndexOperation indexOperation, DWORD64* funcArray ) const;
+    getGlobalReplacementsRVA( const enumIndexOperation indexOperation, FuncInfo* funcArray ) const;
 
     bool
     isIncludeCRTNewArray( void ) const;
 
-    DWORD64
-    getCRTNewArrayRVA( void ) const;
+    bool
+    getCRTNewArrayRVA( FuncInfo* funcInfo ) const;
 
 protected:
     class DebugSymbolImpl;

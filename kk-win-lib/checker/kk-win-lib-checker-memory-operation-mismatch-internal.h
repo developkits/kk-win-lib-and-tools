@@ -99,6 +99,7 @@ struct dataCRTModule
     DWORD64     dwAlignedRealloc;
 
     DWORD64     dwExeCRTNewArray;
+    DWORD64     dwExeCRTNewArraySize;
 };
 
 struct packetCRTModule

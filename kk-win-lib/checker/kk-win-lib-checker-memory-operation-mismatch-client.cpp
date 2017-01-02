@@ -140,6 +140,7 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
             mCRTOffsetIAT[kIndexOperationAlignedReCalloc]   = module.data.dwAlignedReCalloc;
             mCRTOffsetIAT[kIndexOperationAlignedRealloc]    = module.data.dwAlignedRealloc;
             mCRTOffsetIAT[kIndexOperationCRTNewAOP]         = module.data.dwExeCRTNewArray;
+            mCRTOffsetIAT[kIndexOperationCRTNewAOPSize]         = module.data.dwExeCRTNewArraySize;
 
         }
     }

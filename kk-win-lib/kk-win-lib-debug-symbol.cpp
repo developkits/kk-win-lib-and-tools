@@ -34,7 +34,7 @@
 //#pragma comment(lib,"dbghelp.lib")
 
 
-#include <set>
+#include <map>
 
 #include <assert.h>
 
@@ -81,7 +81,7 @@ public:
     getGlobalReplacementsCount( size_t count[kIndexOperationMax] ) const;
 
     bool
-    getGlobalReplacementsRVA( const enumIndexOperation indexOperation, DWORD64* funcArray ) const;
+    getGlobalReplacementsRVA( const enumIndexOperation indexOperation, DebugSymbol::FuncInfo* funcArray ) const;
 
     bool
     isIncludeCRTNewArray( void ) const;
@@ -118,7 +118,7 @@ protected:
 
 protected:
 
-    std::set<DWORD64>       mGlobalReplacements[DebugSymbol::kIndexOperationMax];
+    std::map<DWORD64,DebugSymbol::FuncInfo >     mGlobalReplacements[DebugSymbol::kIndexOperationMax];
     bool                    mIncludeCRTNewArray;
 
 private:
@@ -322,8 +322,8 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
             }
             else
             {
-                std::set<DWORD64>::const_iterator   it = mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].begin();
-                const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + *(it) );
+                std::map<DWORD64,DebugSymbol::FuncInfo>::const_iterator   it = mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].begin();
+                const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + it->second.dwAddr );
 
                 IMAGEHLP_LINE64     line;
                 ZeroMemory( &line, sizeof(line) );
@@ -383,7 +383,7 @@ DebugSymbol::DebugSymbolImpl::getGlobalReplacementsCount( size_t count[kIndexOpe
 }
 
 bool
-DebugSymbol::DebugSymbolImpl::getGlobalReplacementsRVA( const enumIndexOperation indexOperation, DWORD64* funcArray ) const
+DebugSymbol::DebugSymbolImpl::getGlobalReplacementsRVA( const enumIndexOperation indexOperation, DebugSymbol::FuncInfo* funcArray ) const
 {
     if ( NULL == funcArray )
     {
@@ -393,13 +393,13 @@ DebugSymbol::DebugSymbolImpl::getGlobalReplacementsRVA( const enumIndexOperation
     const size_t count = mGlobalReplacements[indexOperation].size();
     size_t index = 0;
     for (
-        std::set<DWORD64>::const_iterator it = mGlobalReplacements[indexOperation].begin();
+        std::map<DWORD64,DebugSymbol::FuncInfo>::const_iterator it = mGlobalReplacements[indexOperation].begin();
         it != mGlobalReplacements[indexOperation].end();
         ++it
     )
     {
         assert( index < count );
-        funcArray[index] = *it;
+        funcArray[index] = it->second;
         index += 1;
     }
 
@@ -831,8 +831,14 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     {
                         if ( kDataTypeUInt == enmTypeArg0 )
                         {
-                            std::pair<std::set<DWORD64>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNew].insert( addr );
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo>::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNew].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
                             assert( true == ret.second );
                         }
                     }
@@ -842,8 +848,14 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     {
                         if ( kDataTypeUInt == enmTypeArg0 )
                         {
-                            std::pair<std::set<DWORD64>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].insert( addr );
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
                             assert( true == ret.second );
                         }
                     }
@@ -853,8 +865,14 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     {
                         if ( kDataTypeVoidPointer == enmTypeArg0 )
                         {
-                            std::pair<std::set<DWORD64>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDelete].insert( addr );
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDelete].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
                             assert( true == ret.second );
                         }
                     }
@@ -864,8 +882,14 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     {
                         if ( kDataTypeVoidPointer == enmTypeArg0 )
                         {
-                            std::pair<std::set<DWORD64>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArray].insert( addr );
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArray].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
                             assert( true == ret.second );
                         }
                     }
@@ -976,7 +1000,7 @@ DebugSymbol::getGlobalReplacementsCount( size_t count[kIndexOperationMax] ) cons
 }
 
 bool
-DebugSymbol::getGlobalReplacementsRVA( const enumIndexOperation indexOperation, DWORD64* funcArray ) const
+DebugSymbol::getGlobalReplacementsRVA( const enumIndexOperation indexOperation, FuncInfo* funcArray ) const
 {
     if ( NULL == mImpl )
     {
@@ -1001,21 +1025,28 @@ DebugSymbol::isIncludeCRTNewArray( void ) const
     return result;
 }
 
-DWORD64
-DebugSymbol::getCRTNewArrayRVA( void ) const
+bool
+DebugSymbol::getCRTNewArrayRVA( DebugSymbol::FuncInfo* funcInfo ) const
 {
-    DWORD64 rva = 0;
+    if ( NULL == funcInfo )
+    {
+        return false;
+    }
+
+    bool result = true;
 
     if ( isIncludeCRTNewArray() )
     {
-        const bool bRet = this->getGlobalReplacementsRVA( DebugSymbol::kIndexOperationNewArray, &rva );
+        const bool bRet = this->getGlobalReplacementsRVA( DebugSymbol::kIndexOperationNewArray, funcInfo );
         if ( !bRet )
         {
-            rva = 0;
+            result = false;
+            funcInfo->dwAddr = 0;
+            funcInfo->size = 0;
         }
     }
 
-    return rva;
+    return result;
 }
 
 
