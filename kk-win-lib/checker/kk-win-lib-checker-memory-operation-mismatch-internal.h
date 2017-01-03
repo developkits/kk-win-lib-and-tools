@@ -74,9 +74,37 @@ struct packetProcessId
     dataProcessId   data;
 };
 
+enum enumCRTVersion
+{
+    enmVS6      =  60
+    , enmVS2002 =  70
+    , enmVS2003 =  71
+    , enmVS2005 =  80
+    , enmVS2008 =  90
+    , enmVS2010 = 100
+    , enmVS2012 = 110
+    , enmVS2013 = 120
+
+    , enmVS2015 = 140
+    , enmVS2017 = 150
+};
+
+struct dataCRTModuleInfo
+{
+    enumCRTVersion  version;
+    bool            isDebug;
+};
+
+union unionCRTModuleInfo
+{
+    DWORD64             pack;
+    dataCRTModuleInfo   info;
+};
+
 struct dataCRTModule
 {
     DWORD64     module;
+    unionCRTModuleInfo  moduleInfo;
 
     DWORD64     dwMalloc;
     DWORD64     dwFree;

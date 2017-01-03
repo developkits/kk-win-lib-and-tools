@@ -438,6 +438,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                             HMODULE hModule = remoteProcess.findModule( "msvcr90.dll" );
                             module.data.module = (DWORD64)hModule;
+                            module.data.moduleInfo.info.version = enmVS2008;
+                            module.data.moduleInfo.info.isDebug = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -448,6 +450,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                             HMODULE hModule = remoteProcess.findModule( "msvcr90d.dll" );
                             module.data.module = (DWORD64)hModule;
+                            module.data.moduleInfo.info.version = enmVS2008;
+                            module.data.moduleInfo.info.isDebug = true;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -458,6 +462,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                             HMODULE hModule = remoteProcess.findModule( "msvcr100.dll" );
                             module.data.module = (DWORD64)hModule;
+                            module.data.moduleInfo.info.version = enmVS2010;
+                            module.data.moduleInfo.info.isDebug = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -467,6 +473,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                             HMODULE hModule = remoteProcess.findModule( "msvcr110.dll" );
                             module.data.module = (DWORD64)hModule;
+                            module.data.moduleInfo.info.version = enmVS2012;
+                            module.data.moduleInfo.info.isDebug = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -476,6 +484,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                             HMODULE hModule = remoteProcess.findModule( "msvcr120.dll" );
                             module.data.module = (DWORD64)hModule;
+                            module.data.moduleInfo.info.version = enmVS2013;
+                            module.data.moduleInfo.info.isDebug = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -486,6 +496,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                             HMODULE hModule = remoteProcess.findModule( "msvcr120d.dll" );
                             module.data.module = (DWORD64)hModule;
+                            module.data.moduleInfo.info.version = enmVS2013;
+                            module.data.moduleInfo.info.isDebug = true;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -497,6 +509,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                             HMODULE hModule = remoteProcess.findModule( "ucrtbased.dll" );
                             module.data.module = (DWORD64)hModule;
+                            module.data.moduleInfo.info.version = enmVS2015;
+                            module.data.moduleInfo.info.isDebug = true;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -507,6 +521,8 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                             HMODULE hModule = remoteProcess.findModule( "api-ms-win-crt-heap-l1-1-0.dll" );
                             module.data.module = (DWORD64)hModule;
+                            module.data.moduleInfo.info.version = enmVS2015;
+                            module.data.moduleInfo.info.isDebug = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
