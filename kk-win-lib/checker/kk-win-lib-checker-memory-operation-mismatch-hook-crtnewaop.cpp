@@ -365,25 +365,8 @@ unhookCRTNewAOP( void )
     DWORD64     maxOffset = 0;
 
     {
-        for ( size_t index = 0; index < MemoryOperationMismatch::kIndexOperationMAX; ++index )
-        {
-            const DWORD64 value = sCRTOffsetIAT[index];
-            if ( 0 == value )
-            {
-                continue;
-            }
-
-            if ( value < minOffset )
-            {
-                minOffset = value;
-            }
-
-            if ( maxOffset < value )
-            {
-                maxOffset = value;
-            }
-
-        }
+        minOffset = sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOP];
+        maxOffset = minOffset + sizeof(sHookJump);
     }
 
     HANDLE hHeap = ::HeapCreate( 0, 0, 0 );
