@@ -534,6 +534,26 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                 {
                     kk::DebugSymbol debugSymbol;
                     debugSymbol.init( processId.processId );
+                    switch ( module.data.moduleInfo.info.version )
+                    {
+                    case enmVS6:
+                    case enmVS2002:
+                    case enmVS2003:
+                    case enmVS2005:
+                    case enmVS2008:
+                    case enmVS2010:
+                    case enmVS2012:
+                    case enmVS2013:
+                        debugSymbol.setCRTCPPisStaticLinked( false );
+                        break;
+
+                    case enmVS2015:
+                        debugSymbol.setCRTCPPisStaticLinked( true );
+                        break;
+
+                    default:
+                        break;
+                    }
                     debugSymbol.findGlobalReplacements();
                     includeCRTNewArray = debugSymbol.isIncludeCRTNewArray();
                     if ( includeCRTNewArray )

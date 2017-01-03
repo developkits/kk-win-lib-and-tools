@@ -87,6 +87,16 @@ public:
     isIncludeCRTNewArray( void ) const;
 
 protected:
+    bool                mCRTCPPisStaticLinked;
+
+public:
+    bool
+    setCRTCPPisStaticLinked( const bool isStaticLinked );
+
+    bool
+    getCRTCPPisStaticLinked( void ) const;
+
+protected:
     static
     BOOL
     CALLBACK
@@ -152,6 +162,7 @@ DebugSymbol::DebugSymbolImpl::DebugSymbolImpl()
         mGlobalReplacements[index].clear();
     }
     mIncludeCRTNewArray = false;
+    mCRTCPPisStaticLinked = false;
 }
 
 DebugSymbol::DebugSymbolImpl::~DebugSymbolImpl()
@@ -201,6 +212,7 @@ DebugSymbol::DebugSymbolImpl::term( void )
         mGlobalReplacements[index].clear();
     }
     mIncludeCRTNewArray = false;
+    mCRTCPPisStaticLinked = false;
 
 
     mHandleProcess = NULL;
@@ -309,10 +321,61 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
             }
         }
 
-        if (
-            1 == mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].size()
-            //&& 0 == mGlobalReplacements[DebugSymbol::kIndexOperationNew].size()
-        )
+        if ( ! this->getCRTCPPisStaticLinked() )
+        {
+            if (
+                1 == mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].size()
+                //&& 0 == mGlobalReplacements[DebugSymbol::kIndexOperationNew].size()
+            )
+            {
+                if ( !info.LineNumbers )
+                {
+                    {
+                        ::OutputDebugStringA( "kk-win-lib-debug-symbol: debug symbol does not have line numbers info\n" );
+                    }
+                }
+                else
+                {
+                    std::map<DWORD64,DebugSymbol::FuncInfo>::const_iterator   it = mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].begin();
+                    const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + it->second.dwAddr );
+
+                    IMAGEHLP_LINE64     line;
+                    ZeroMemory( &line, sizeof(line) );
+                    line.SizeOfStruct = sizeof(line);
+                    {
+                        DWORD dwDisplacement = 0;
+                        const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, qwAddr, &dwDisplacement, &line );
+                        if ( !BRet )
+                        {
+                            const DWORD dwErr = ::GetLastError();
+                        }
+                    }
+
+                    bool includeCRTNewArray = true;
+                    if ( NULL == line.FileName )
+                    {
+                        includeCRTNewArray = false;
+                    }
+                    else
+                    {
+                        char    fileName[_MAX_PATH];
+                        ::lstrcpyA( fileName, line.FileName );
+                        ::_strlwr_s( fileName, sizeof(fileName)/sizeof(fileName[0]) );
+
+                        if ( NULL == ::strstr( fileName, "\\crt" ) )
+                        {
+                            includeCRTNewArray = false;
+                        }
+                        if ( NULL == ::strstr( fileName, "\\newaop" ) )
+                        {
+                            includeCRTNewArray = false;
+                        }
+                    }
+                    mIncludeCRTNewArray = includeCRTNewArray;
+                }
+            }
+        }
+        else
         {
             if ( !info.LineNumbers )
             {
@@ -322,42 +385,74 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
             }
             else
             {
-                std::map<DWORD64,DebugSymbol::FuncInfo>::const_iterator   it = mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].begin();
-                const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + it->second.dwAddr );
-
-                IMAGEHLP_LINE64     line;
-                ZeroMemory( &line, sizeof(line) );
-                line.SizeOfStruct = sizeof(line);
+                for ( size_t index = DebugSymbol::kIndexOperationNew; index < DebugSymbol::kIndexOperationDeleteArray; ++index )
                 {
-                    DWORD dwDisplacement = 0;
-                    const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, qwAddr, &dwDisplacement, &line );
-                    if ( !BRet )
-                    {
-                        const DWORD dwErr = ::GetLastError();
-                    }
-                }
+                    std::map<DWORD64,DebugSymbol::FuncInfo>::iterator   it = mGlobalReplacements[index].begin();
+                    const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + it->second.dwAddr );
 
-                bool includeCRTNewArray = true;
-                if ( NULL == line.FileName )
-                {
-                    includeCRTNewArray = false;
-                }
-                else
-                {
-                    char    fileName[_MAX_PATH];
-                    ::lstrcpyA( fileName, line.FileName );
-                    ::_strlwr_s( fileName, sizeof(fileName)/sizeof(fileName[0]) );
+                    IMAGEHLP_LINE64     line;
+                    ZeroMemory( &line, sizeof(line) );
+                    line.SizeOfStruct = sizeof(line);
+                    {
+                        DWORD dwDisplacement = 0;
+                        const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, qwAddr, &dwDisplacement, &line );
+                        if ( !BRet )
+                        {
+                            const DWORD dwErr = ::GetLastError();
+                        }
+                    }
 
-                    if ( NULL == ::strstr( fileName, "\\crt" ) )
+                    bool isCRTFunc = true;
+                    if ( NULL == line.FileName )
                     {
-                        includeCRTNewArray = false;
+                        isCRTFunc = false;
                     }
-                    if ( NULL == ::strstr( fileName, "\\newaop" ) )
+                    else
                     {
-                        includeCRTNewArray = false;
+                        char    fileName[_MAX_PATH*2];
+                        ::lstrcpyA( fileName, line.FileName );
+                        ::_strlwr_s( fileName, sizeof(fileName)/sizeof(fileName[0]) );
+
+                        if ( NULL == ::strstr( fileName, "\\crt" ) )
+                        {
+                            isCRTFunc = false;
+                        }
+
+                        switch ( index )
+                        {
+                        case DebugSymbol::kIndexOperationNew:
+                            if ( NULL == ::strstr( fileName, "\\new_scalar" ) )
+                            {
+                                isCRTFunc = false;
+                            }
+                            break;
+                        case DebugSymbol::kIndexOperationDelete:
+                            if ( NULL == ::strstr( fileName, "\\delete_scalar" ) )
+                            {
+                                isCRTFunc = false;
+                            }
+                            break;
+                        case DebugSymbol::kIndexOperationNewArray:
+                            if ( NULL == ::strstr( fileName, "\\new_array" ) )
+                            {
+                                isCRTFunc = false;
+                            }
+                            break;
+                        case DebugSymbol::kIndexOperationDeleteArray:
+                            if ( NULL == ::strstr( fileName, "\\delete_array" ) )
+                            {
+                                isCRTFunc = false;
+                            }
+                            break;
+
+                        default:
+                            assert( false );
+                            break;
+                        }
                     }
+
+                    it->second.isCRT = isCRTFunc;
                 }
-                mIncludeCRTNewArray = includeCRTNewArray;
             }
         }
     }
@@ -412,7 +507,21 @@ DebugSymbol::DebugSymbolImpl::isIncludeCRTNewArray( void ) const
     return mIncludeCRTNewArray;
 }
 
+bool
+DebugSymbol::DebugSymbolImpl::setCRTCPPisStaticLinked( const bool isStaticLinked )
+{
+    bool oldValue = mCRTCPPisStaticLinked;
 
+    mCRTCPPisStaticLinked = isStaticLinked;
+
+    return oldValue;
+}
+
+bool
+DebugSymbol::DebugSymbolImpl::getCRTCPPisStaticLinked( void ) const
+{
+    return mCRTCPPisStaticLinked;
+}
 
 
 
@@ -917,6 +1026,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
 DebugSymbol::DebugSymbol()
 {
     mImpl = NULL;
+    mCRTCPPisStaticLinked = false;
 }
 
 DebugSymbol::~DebugSymbol()
@@ -934,6 +1044,7 @@ DebugSymbol::term(void)
         delete mImpl;
         mImpl = NULL;
     }
+    mCRTCPPisStaticLinked = false;
 
     return true;
 }
@@ -1049,6 +1160,21 @@ DebugSymbol::getCRTNewArrayRVA( DebugSymbol::FuncInfo* funcInfo ) const
     return result;
 }
 
+bool
+DebugSymbol::setCRTCPPisStaticLinked( const bool isStaticLinked )
+{
+    bool oldValue = mCRTCPPisStaticLinked;
+
+    mCRTCPPisStaticLinked = isStaticLinked;
+
+    return oldValue;
+}
+
+bool
+DebugSymbol::getCRTCPPisStaticLinked( void ) const
+{
+    return mCRTCPPisStaticLinked;
+}
 
 
 

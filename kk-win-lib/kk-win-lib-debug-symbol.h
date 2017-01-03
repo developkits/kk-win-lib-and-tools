@@ -57,7 +57,8 @@ public:
     struct FuncInfo
     {
         DWORD64     dwAddr;
-        DWORD64     size;
+        DWORD       size;
+        bool        isCRT;
     };
 
     bool
@@ -71,6 +72,17 @@ public:
 
     bool
     getCRTNewArrayRVA( FuncInfo* funcInfo ) const;
+
+
+protected:
+    bool                mCRTCPPisStaticLinked;
+
+public:
+    bool
+    setCRTCPPisStaticLinked( const bool isStaticLinked );
+
+    bool
+    getCRTCPPisStaticLinked( void ) const;
 
 protected:
     class DebugSymbolImpl;
