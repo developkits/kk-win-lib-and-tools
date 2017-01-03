@@ -491,10 +491,21 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
                         }
 #endif
+#if defined(_DEBUG)
                         else
-                        if ( 0 == ::lstrcmpiA(pFile, "ucrtbase.dll" ) )
+                        if ( 0 == ::lstrcmpiA(pFile, "ucrtbased.dll" ) )
                         {
-                            HMODULE hModule = remoteProcess.findModule( "ucrtbase.dll" );
+                            HMODULE hModule = remoteProcess.findModule( "ucrtbased.dll" );
+                            module.data.module = (DWORD64)hModule;
+
+                            const size_t funcCount = funcCountFile[indexFile];
+                            fetchFunc( module.data, funcCount, funcFile[indexFile] );
+                        }
+#endif
+                        else
+                        if ( 0 == ::lstrcmpiA(pFile, "api-ms-win-crt-heap-l1-1-0.dll" ) )
+                        {
+                            HMODULE hModule = remoteProcess.findModule( "api-ms-win-crt-heap-l1-1-0.dll" );
                             module.data.module = (DWORD64)hModule;
 
                             const size_t funcCount = funcCountFile[indexFile];
