@@ -97,7 +97,7 @@ static
 void*
 my_new_array( size_t size )
 {
-    void* p = pfn_new(size);
+    void* p = pfn_new_array(size);
 
     sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticNewArray, (DWORD64)p );
 
