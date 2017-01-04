@@ -573,7 +573,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         if ( bRet )
                         {
                             module.func.dwCRTStaticNewArray = funcInfo.dwAddr;
-                            module.func.dwCRTStaticNewArraySize = funcInfo.size;
+                            module.func.dwCRTStaticNewArrayLength = funcInfo.size;
                         }
                         else
                         {
@@ -605,20 +605,30 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                         {
                                         case DebugSymbol::kIndexOperationNew:
                                             module.func.dwCRTStaticNew = funcInfo[index].dwAddr;
-                                            module.func.dwCRTStaticNewSize = funcInfo[index].size;
+                                            module.func.dwCRTStaticNewLength = funcInfo[index].size;
                                             break;
                                         case DebugSymbol::kIndexOperationDelete:
                                             module.func.dwCRTStaticDelete = funcInfo[index].dwAddr;
-                                            module.func.dwCRTStaticDeleteSize = funcInfo[index].size;
+                                            module.func.dwCRTStaticDeleteLength = funcInfo[index].size;
                                             break;
                                         case DebugSymbol::kIndexOperationNewArray:
                                             module.func.dwCRTStaticNewArray = funcInfo[index].dwAddr;
-                                            module.func.dwCRTStaticNewArraySize = funcInfo[index].size;
+                                            module.func.dwCRTStaticNewArrayLength = funcInfo[index].size;
                                             break;
                                         case DebugSymbol::kIndexOperationDeleteArray:
                                             module.func.dwCRTStaticDeleteArray = funcInfo[index].dwAddr;
-                                            module.func.dwCRTStaticDeleteArraySize = funcInfo[index].size;
+                                            module.func.dwCRTStaticDeleteArrayLength = funcInfo[index].size;
                                             break;
+
+                                        case DebugSymbol::kIndexOperationDeleteSize:
+                                            module.func.dwCRTStaticDeleteSize = funcInfo[index].dwAddr;
+                                            module.func.dwCRTStaticDeleteSizeLength = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationDeleteArraySize:
+                                            module.func.dwCRTStaticDeleteArraySize = funcInfo[index].dwAddr;
+                                            module.func.dwCRTStaticDeleteArraySizeLength = funcInfo[index].size;
+                                            break;
+
                                         default:
                                             assert( false );
                                             break;

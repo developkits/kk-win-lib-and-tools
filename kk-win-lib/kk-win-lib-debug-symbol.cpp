@@ -450,6 +450,19 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
                                 }
                                 break;
 
+                            case DebugSymbol::kIndexOperationDeleteSize:
+                                if ( NULL == ::strstr( fileName, "\\delete_scalar_size" ) )
+                                {
+                                    isCRTFunc = false;
+                                }
+                                break;
+                            case DebugSymbol::kIndexOperationDeleteArraySize:
+                                if ( NULL == ::strstr( fileName, "\\delete_array_size" ) )
+                                {
+                                    isCRTFunc = false;
+                                }
+                                break;
+
                             default:
                                 assert( false );
                                 break;
@@ -1013,8 +1026,106 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                         }
                     }
                     break;
+
+                default:
+                    assert( false );
+                    break;
                 }
             }
+
+#if 0
+            if ( isArgDouble )
+            {
+                const DWORD64   addr = pSymInfo->Address - dwModuleBase;
+                switch ( enmOperation )
+                {
+#if 0
+                case kOperationNew:
+                    if ( kDataTypeVoidPointer == enmTypeReturn )
+                    {
+                        if ( kDataTypeUInt == enmTypeArg0 )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo>::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNew].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+                case kOperationNewArray:
+                    if ( kDataTypeVoidPointer == enmTypeReturn )
+                    {
+                        if ( kDataTypeUInt == enmTypeArg0 )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+#endif
+                case kOperationDelete:
+                    if ( kDataTypeVoid == enmTypeReturn )
+                    {
+                        if (
+                            kDataTypeVoidPointer == enmTypeArg0
+                            && kDataTypeUInt == enmTypeArg1
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDelete].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+                case kOperationDeleteArray:
+                    if ( kDataTypeVoid == enmTypeReturn )
+                    {
+                        if (
+                            kDataTypeVoidPointer == enmTypeArg0
+                            && kDataTypeUInt == enmTypeArg1
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArray].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+
+                default:
+                    assert( false );
+                    break;
+                }
+            }
+#endif
 
 #if defined(_DEBUG)
             ::OutputDebugStringA( "" );

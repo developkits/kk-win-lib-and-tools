@@ -79,6 +79,9 @@ public:
         , kOperationCRTStaticNewArray = 0x60+2
         , kOperationCRTStaticDeleteArray = 0x60+3
 
+        , kOperationCRTStaticDeleteSize = 0x60+4
+        , kOperationCRTStaticDeleteArraySize = 0x60+5
+
     };
 
 

@@ -74,6 +74,13 @@ typedef void (*PFN_delete_array)(void* p);
 static
 PFN_delete_array    pfn_delete_array = NULL;
 
+typedef void (*PFN_delete_size)(void* p,size_t size);
+static
+PFN_delete_size         pfn_delete_size = NULL;
+
+typedef void (*PFN_delete_array_size)(void* p,size_t size);
+static
+PFN_delete_array_size   pfn_delete_array_size = NULL;
 
 static
 void*
@@ -119,6 +126,30 @@ my_delete_array( void* p )
     sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationDeleteArray, (DWORD64)p );
 
     pfn_delete_array(p);
+
+    return;
+}
+
+static
+void
+my_delete_size( void* p, size_t size )
+{
+    //sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDeleteSize, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationDelete, (DWORD64)p );
+
+    pfn_delete_size(p,size);
+
+    return;
+}
+
+static
+void
+my_delete_array_size( void* p, size_t size )
+{
+    //sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDeleteArraySize, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationDeleteArray, (DWORD64)p );
+
+    pfn_delete_array_size(p,size);
 
     return;
 }
@@ -509,6 +540,15 @@ hookCRTCPP( const HMODULE hModule )
                             case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteArray:
                                 addr = reinterpret_cast<LPBYTE>(my_delete_array);
                                 break;
+                            case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteSize:
+                                addr = reinterpret_cast<LPBYTE>(my_delete_size);
+                                break;
+                            case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteArraySize:
+                                addr = reinterpret_cast<LPBYTE>(my_delete_array_size);
+                                break;
+                            default:
+                                assert( false );
+                                break;
                             }
                             *pAddr = addr - pAddrBase;
                         }
@@ -543,6 +583,15 @@ hookCRTCPP( const HMODULE hModule )
                                 case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteArray:
                                     addr = reinterpret_cast<LPBYTE>(my_delete_array);
                                     break;
+                                case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteSize:
+                                    addr = reinterpret_cast<LPBYTE>(my_delete_size);
+                                    break;
+                                case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteArraySize:
+                                    addr = reinterpret_cast<LPBYTE>(my_delete_array_size);
+                                    break;
+                                default:
+                                    assert( false );
+                                    break;
                                 }
                                 pAddrJump->absAddr = reinterpret_cast<DWORD64>(addr);
                             }
@@ -569,6 +618,12 @@ hookCRTCPP( const HMODULE hModule )
                             break;
                         case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteArray:
                             pfn_delete_array = reinterpret_cast<PFN_delete_array>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteSize:
+                            pfn_delete_size = reinterpret_cast<PFN_delete_size>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexCRTStaticFuncDeleteArraySize:
+                            pfn_delete_array_size = reinterpret_cast<PFN_delete_array_size>(pHookCode);
                             break;
                         }
 
@@ -793,6 +848,8 @@ unhookCRTCPP( void )
     pfn_delete = NULL;
     pfn_new_array = NULL;
     pfn_delete_array = NULL;
+    pfn_delete_size = NULL;
+    pfn_delete_array_size = NULL;
 
     {
         const DWORD dwFreeType = MEM_RELEASE;

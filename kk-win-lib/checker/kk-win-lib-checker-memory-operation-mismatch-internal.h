@@ -132,13 +132,18 @@ struct dataCRTModule
 struct dataCRTStaticFunc
 {
     DWORD64     dwCRTStaticNew;
-    DWORD64     dwCRTStaticNewSize;
+    DWORD64     dwCRTStaticNewLength;
     DWORD64     dwCRTStaticDelete;
-    DWORD64     dwCRTStaticDeleteSize;
+    DWORD64     dwCRTStaticDeleteLength;
     DWORD64     dwCRTStaticNewArray;
-    DWORD64     dwCRTStaticNewArraySize;
+    DWORD64     dwCRTStaticNewArrayLength;
     DWORD64     dwCRTStaticDeleteArray;
+    DWORD64     dwCRTStaticDeleteArrayLength;
+
+    DWORD64     dwCRTStaticDeleteSize;
+    DWORD64     dwCRTStaticDeleteSizeLength;
     DWORD64     dwCRTStaticDeleteArraySize;
+    DWORD64     dwCRTStaticDeleteArraySizeLength;
 };
 
 struct packetCRTModule

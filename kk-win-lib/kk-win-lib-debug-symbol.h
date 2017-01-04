@@ -51,7 +51,10 @@ public:
         , kIndexOperationNewArray = 2
         , kIndexOperationDeleteArray = 3
 
-        , kIndexOperationMax = 4
+        , kIndexOperationDeleteSize = 4
+        , kIndexOperationDeleteArraySize = 5
+
+        , kIndexOperationMax = 6
     };
 
     struct FuncInfo
