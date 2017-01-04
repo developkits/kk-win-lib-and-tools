@@ -501,7 +501,7 @@ hookCRTCPP( const HMODULE hModule )
                         {
 #if defined(_M_IX86)
                             pHookCode[indexHook] = sHookJump.opJmp;
-                            size_t* pAddr = reinterpret_cast<size_t*>(&pHookCode[indexHook+1]);
+                            DWORD* pAddr = reinterpret_cast<DWORD*>(&pHookCode[indexHook+1]);
                             const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+sizeof(HookJump)]);
                             const LPBYTE pAddrBase = reinterpret_cast<LPBYTE>(&pHookCode[indexHook+sizeof(HookJump)]);
                             *pAddr = addr - pAddrBase;
@@ -523,7 +523,7 @@ hookCRTCPP( const HMODULE hModule )
 #if defined(_M_IX86)
                         {
                             pCode[indexPatch+0] = sHookJump.opJmp;
-                            size_t* pAddr = reinterpret_cast<size_t*>(&pCode[indexPatch+1]);
+                            DWORD* pAddr = reinterpret_cast<DWORD*>(&pCode[indexPatch+1]);
                             const LPBYTE pAddrBase = reinterpret_cast<const LPBYTE>(&pCode[indexPatch+0+sizeof(HookJump)]);
                             LPBYTE addr = NULL;
                             switch ( indexOperation )
@@ -599,7 +599,7 @@ hookCRTCPP( const HMODULE hModule )
 #endif // defined(_M_X64)
 
                         {
-                            for ( size_t index = sizeof(HookJump); index < indexOrig; ++index )
+                            for ( size_t index = indexPatch + sizeof(HookJump); index < indexOrig; ++index )
                             {
                                 pCode[index] = 0x90;
                             }
