@@ -508,6 +508,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-crtcpp.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-crtcpp.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-crtnewaop.cpp"
 					>
 				</File>
@@ -521,6 +529,10 @@
 				</File>
 				<File
 					RelativePath="..\..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-iat.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-internal.h"
 					>
 				</File>
 				<File

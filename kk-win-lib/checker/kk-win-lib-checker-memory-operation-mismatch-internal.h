@@ -93,6 +93,8 @@ struct dataCRTModuleInfo
 {
     enumCRTVersion  version;
     bool            isDebug;
+
+    bool            isCRTStaticLinked;
 };
 
 union unionCRTModuleInfo
@@ -125,15 +127,25 @@ struct dataCRTModule
     DWORD64     dwAlignedFree;
     DWORD64     dwAlignedReCalloc;
     DWORD64     dwAlignedRealloc;
+};
 
-    DWORD64     dwExeCRTNewArray;
-    DWORD64     dwExeCRTNewArraySize;
+struct dataCRTStaticFunc
+{
+    DWORD64     dwCRTStaticNew;
+    DWORD64     dwCRTStaticNewSize;
+    DWORD64     dwCRTStaticDelete;
+    DWORD64     dwCRTStaticDeleteSize;
+    DWORD64     dwCRTStaticNewArray;
+    DWORD64     dwCRTStaticNewArraySize;
+    DWORD64     dwCRTStaticDeleteArray;
+    DWORD64     dwCRTStaticDeleteArraySize;
 };
 
 struct packetCRTModule
 {
     packetHeader    header;
     dataCRTModule   data;
+    dataCRTStaticFunc   func;
 };
 
 struct dataMemoryOperation

@@ -73,6 +73,12 @@ public:
         , kOperationAlignedReallocFree = 0x40+4
         , kOperationAlignedRecallocFree = 0x40+5
 
+
+        , kOperationCRTStaticNew = 0x60+0
+        , kOperationCRTStaticDelete = 0x60+1
+        , kOperationCRTStaticNewArray = 0x60+2
+        , kOperationCRTStaticDeleteArray = 0x60+3
+
     };
 
 
@@ -98,10 +104,21 @@ public:
         , kIndexOperationReCalloc = 14
         , kIndexOperationExpand = 15
 
-        , kIndexOperationCRTNewAOP = 16
-        , kIndexOperationCRTNewAOPSize = 17
+        , kIndexOperationMAX = 16
+    };
 
-        , kIndexOperationMAX = 18
+    enum enumIndexCRTStaticFunc
+    {
+        kIndexCRTStaticFuncNew = 0
+        , kIndexCRTStaticFuncNewSize = 1
+        , kIndexCRTStaticFuncDelete = 2
+        , kIndexCRTStaticFuncDeleteSize = 3
+        , kIndexCRTStaticFuncNewArray = 4
+        , kIndexCRTStaticFuncNewArraySize = 5
+        , kIndexCRTStaticFuncDeleteArray = 6
+        , kIndexCRTStaticFuncDeleteArraySize = 7
+
+        , kIndexCRTStaticFuncMAX = 8
     };
 
 protected:

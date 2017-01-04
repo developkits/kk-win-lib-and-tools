@@ -55,8 +55,16 @@ public:
     bool
     getCRTOffsetIAT( DWORD64 CRTOffsetIAT[kIndexOperationMAX] ) const;
 
+    bool
+    getCRTStaticFunc( DWORD64 CRTStaticFunc[kIndexCRTStaticFuncMAX] ) const;
+
+    bool
+    getCRTisStaticLinked( void ) const;
+
 protected:
     DWORD64             mCRTOffsetIAT[kIndexOperationMAX];
+    DWORD64             mCRTStaticFunc[kIndexCRTStaticFuncMAX];
+    bool                mCRTisStaticLinked;
 
 public:
     bool
@@ -65,9 +73,13 @@ public:
     bool
     disableHookCRTNewArray( const bool disableHook );
 
+    bool
+    disableHookCRTCPP( const bool disableHook );
+
 protected:
     bool                mUseHookIAT;
     bool                mUseHookCRTNewArray;
+    bool                mUseHookCRTCPP;
 
 private:
     explicit MemoryOperationMismatchClient(const MemoryOperationMismatchClient&);

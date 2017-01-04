@@ -51,7 +51,7 @@ sModule = NULL;
 
 static
 DWORD64
-sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationMAX];
+sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncMAX];
 
 static
 MemoryOperationMismatchClient*
@@ -158,14 +158,14 @@ hookCRTNewAOP( const HMODULE hModule )
     DWORD64     maxOffset = 0;
 
     {
-        minOffset = sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOP];
+        minOffset = sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray];
         maxOffset = minOffset + sizeof(sHookJump);
     }
 
     {
         bool haveSpace = false;
 
-        const DWORD64 funcSize = sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOPSize];
+        const DWORD64 funcSize = sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArraySize];
         if ( sizeof(HookJump) <= funcSize )
         {
             haveSpace = true;
@@ -276,9 +276,9 @@ hookCRTNewAOP( const HMODULE hModule )
                 assert( sizeof(size_t) == sizeof(void*) );
                 BYTE*   p = reinterpret_cast<BYTE*>(hModule);
 
-                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOP] )
+                if ( 0 != sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray] )
                 {
-                    BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOP]);
+                    BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray]);
                     for ( size_t index = 0; index < sizeof(sHookJump); ++index )
                     {
                         sOrigCode[index] = pCode[index];
@@ -289,7 +289,8 @@ hookCRTNewAOP( const HMODULE hModule )
                         pCode[index] = pHookCode[index];
                     }
 
-                    size_t* crtNew = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew]);
+                    assert( 0 != sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNew] );
+                    size_t* crtNew = reinterpret_cast<size_t*>(p + sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNew]);
                     pfn_new = reinterpret_cast<PFN_new>(*crtNew);
                 }
 
@@ -365,7 +366,7 @@ unhookCRTNewAOP( void )
     DWORD64     maxOffset = 0;
 
     {
-        minOffset = sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOP];
+        minOffset = sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray];
         maxOffset = minOffset + sizeof(sHookJump);
     }
 
@@ -429,11 +430,11 @@ unhookCRTNewAOP( void )
                 assert( sizeof(size_t) == sizeof(void*) );
                 BYTE*   p = reinterpret_cast<BYTE*>(sModule);
 
-                if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOP] )
+                if ( 0 != sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray] )
                 {
                     if ( NULL != pfn_new )
                     {
-                        BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCRTNewAOP]);
+                        BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray]);
                         for ( size_t index = 0; index < sizeof(sHookJump); ++index )
                         {
                             pCode[index] = sOrigCode[index];
@@ -507,7 +508,7 @@ hookMemoryOperationMismatchCRTNewAOP( const HMODULE hModule, MemoryOperationMism
 {
     bool result = true;
     {
-        const bool bRet = pMOM->getCRTOffsetIAT( sCRTOffsetIAT );
+        const bool bRet = pMOM->getCRTStaticFunc( sCRTStaticFunc );
         if ( !bRet )
         {
             result = false;

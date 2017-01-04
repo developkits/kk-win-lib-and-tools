@@ -413,6 +413,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                 module.header.size = sizeof(module);
                 module.header.mode = kModeCRTModule;
                 ZeroMemory( &module.data, sizeof(module.data) );
+                ZeroMemory( &module.func, sizeof(module.func) );
                 {
                     kk::RemoteProcess   remoteProcess;
                     remoteProcess.init( processId.processId );
@@ -440,6 +441,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             module.data.module = (DWORD64)hModule;
                             module.data.moduleInfo.info.version = enmVS2008;
                             module.data.moduleInfo.info.isDebug = false;
+                            module.data.moduleInfo.info.isCRTStaticLinked = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -452,6 +454,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             module.data.module = (DWORD64)hModule;
                             module.data.moduleInfo.info.version = enmVS2008;
                             module.data.moduleInfo.info.isDebug = true;
+                            module.data.moduleInfo.info.isCRTStaticLinked = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -464,6 +467,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             module.data.module = (DWORD64)hModule;
                             module.data.moduleInfo.info.version = enmVS2010;
                             module.data.moduleInfo.info.isDebug = false;
+                            module.data.moduleInfo.info.isCRTStaticLinked = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -475,6 +479,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             module.data.module = (DWORD64)hModule;
                             module.data.moduleInfo.info.version = enmVS2012;
                             module.data.moduleInfo.info.isDebug = false;
+                            module.data.moduleInfo.info.isCRTStaticLinked = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -486,6 +491,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             module.data.module = (DWORD64)hModule;
                             module.data.moduleInfo.info.version = enmVS2013;
                             module.data.moduleInfo.info.isDebug = false;
+                            module.data.moduleInfo.info.isCRTStaticLinked = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -498,6 +504,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             module.data.module = (DWORD64)hModule;
                             module.data.moduleInfo.info.version = enmVS2013;
                             module.data.moduleInfo.info.isDebug = true;
+                            module.data.moduleInfo.info.isCRTStaticLinked = false;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -511,6 +518,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             module.data.module = (DWORD64)hModule;
                             module.data.moduleInfo.info.version = enmVS2015;
                             module.data.moduleInfo.info.isDebug = true;
+                            module.data.moduleInfo.info.isCRTStaticLinked = true;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -523,6 +531,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             module.data.module = (DWORD64)hModule;
                             module.data.moduleInfo.info.version = enmVS2015;
                             module.data.moduleInfo.info.isDebug = false;
+                            module.data.moduleInfo.info.isCRTStaticLinked = true;
 
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
@@ -563,18 +572,74 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         const bool bRet = debugSymbol.getCRTNewArrayRVA( &funcInfo );
                         if ( bRet )
                         {
-                            module.data.dwExeCRTNewArray = funcInfo.dwAddr;
-                            module.data.dwExeCRTNewArraySize = funcInfo.size;
+                            module.func.dwCRTStaticNewArray = funcInfo.dwAddr;
+                            module.func.dwCRTStaticNewArraySize = funcInfo.size;
                         }
                         else
                         {
                         }
                     }
+                    else
+                    {
+                        size_t  countArray[DebugSymbol::kIndexOperationMax];
+                        debugSymbol.getGlobalReplacementsCount( countArray );
+                        for ( size_t indexOperation = 0; indexOperation < DebugSymbol::kIndexOperationMax; ++indexOperation )
+                        {
+                            const size_t count = countArray[indexOperation];
+                            if ( 0 == count )
+                            {
+                                continue;
+                            }
+
+                            DebugSymbol::FuncInfo* funcInfo = new DebugSymbol::FuncInfo[ count ];
+
+                            if ( NULL != funcInfo )
+                            {
+                                debugSymbol.getGlobalReplacementsRVA( (DebugSymbol::enumIndexOperation)indexOperation, funcInfo );
+
+                                for ( size_t index = 0; index < count; ++index )
+                                {
+                                    if ( funcInfo[index].isCRT )
+                                    {
+                                        switch( indexOperation )
+                                        {
+                                        case DebugSymbol::kIndexOperationNew:
+                                            module.func.dwCRTStaticNew = funcInfo[index].dwAddr;
+                                            module.func.dwCRTStaticNewSize = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationDelete:
+                                            module.func.dwCRTStaticDelete = funcInfo[index].dwAddr;
+                                            module.func.dwCRTStaticDeleteSize = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationNewArray:
+                                            module.func.dwCRTStaticNewArray = funcInfo[index].dwAddr;
+                                            module.func.dwCRTStaticNewArraySize = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationDeleteArray:
+                                            module.func.dwCRTStaticDeleteArray = funcInfo[index].dwAddr;
+                                            module.func.dwCRTStaticDeleteArraySize = funcInfo[index].size;
+                                            break;
+                                        default:
+                                            assert( false );
+                                            break;
+                                        }
+                                    }
+                                } // for index
+
+                            }
+
+                            if ( NULL != funcInfo )
+                            {
+                                delete [] funcInfo;
+                            }
+                            funcInfo = NULL;
+                        } // for indexOperation
+                    }
                 }
 
                 if ( includeCRTNewArray )
                 {
-                    if ( 0 == module.data.dwExeCRTNewArray )
+                    if ( 0 == module.func.dwCRTStaticNewArray )
                     {
                         luckNewArray = true;
                     }
@@ -1072,6 +1137,13 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                         }
                     }
+                    break;
+
+                case kOperationCRTStaticNew:
+                case kOperationCRTStaticNewArray:
+                case kOperationCRTStaticDelete:
+                case kOperationCRTStaticDeleteArray:
+                    //fdhahjkl
                     break;
 
                 default:
