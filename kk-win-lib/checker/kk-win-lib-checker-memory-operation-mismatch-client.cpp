@@ -150,14 +150,14 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
             mCRTOffsetIAT[kIndexOperationAlignedReCalloc]   = module.data.dwAlignedReCalloc;
             mCRTOffsetIAT[kIndexOperationAlignedRealloc]    = module.data.dwAlignedRealloc;
 
-            mCRTStaticFunc[kIndexCRTStaticFuncNew]              = module.func.dwCRTStaticNew;
-            mCRTStaticFunc[kIndexCRTStaticFuncNewSize]          = module.func.dwCRTStaticNewSize;
-            mCRTStaticFunc[kIndexCRTStaticFuncDelete]           = module.func.dwCRTStaticDelete;
-            mCRTStaticFunc[kIndexCRTStaticFuncDeleteSize]       = module.func.dwCRTStaticDeleteSize;
-            mCRTStaticFunc[kIndexCRTStaticFuncNewArray]         = module.func.dwCRTStaticNewArray;
-            mCRTStaticFunc[kIndexCRTStaticFuncNewArraySize]     = module.func.dwCRTStaticNewArraySize;
-            mCRTStaticFunc[kIndexCRTStaticFuncDeleteArray]      = module.func.dwCRTStaticDeleteArray;
-            mCRTStaticFunc[kIndexCRTStaticFuncDeleteArraySize]  = module.func.dwCRTStaticDeleteArraySize;
+            mCRTStaticFunc[kIndexCRTStaticFuncNew]                  = module.func.dwCRTStaticNew;
+            mCRTStaticFunc[kIndexCRTStaticFuncNewLength]            = module.func.dwCRTStaticNewSize;
+            mCRTStaticFunc[kIndexCRTStaticFuncDelete]               = module.func.dwCRTStaticDelete;
+            mCRTStaticFunc[kIndexCRTStaticFuncDeleteLength]         = module.func.dwCRTStaticDeleteSize;
+            mCRTStaticFunc[kIndexCRTStaticFuncNewArray]             = module.func.dwCRTStaticNewArray;
+            mCRTStaticFunc[kIndexCRTStaticFuncNewArrayLength]       = module.func.dwCRTStaticNewArraySize;
+            mCRTStaticFunc[kIndexCRTStaticFuncDeleteArray]          = module.func.dwCRTStaticDeleteArray;
+            mCRTStaticFunc[kIndexCRTStaticFuncDeleteArrayLength]    = module.func.dwCRTStaticDeleteArraySize;
 
             mCRTisStaticLinked = module.data.moduleInfo.info.isCRTStaticLinked;
         }

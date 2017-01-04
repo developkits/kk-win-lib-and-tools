@@ -165,7 +165,7 @@ hookCRTNewAOP( const HMODULE hModule )
     {
         bool haveSpace = false;
 
-        const DWORD64 funcSize = sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArraySize];
+        const DWORD64 funcSize = sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArrayLength];
         if ( sizeof(HookJump) <= funcSize )
         {
             haveSpace = true;

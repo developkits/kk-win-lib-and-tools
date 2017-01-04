@@ -110,15 +110,21 @@ public:
     enum enumIndexCRTStaticFunc
     {
         kIndexCRTStaticFuncNew = 0
-        , kIndexCRTStaticFuncNewSize = 1
+        , kIndexCRTStaticFuncNewLength = 1
         , kIndexCRTStaticFuncDelete = 2
-        , kIndexCRTStaticFuncDeleteSize = 3
+        , kIndexCRTStaticFuncDeleteLength = 3
         , kIndexCRTStaticFuncNewArray = 4
-        , kIndexCRTStaticFuncNewArraySize = 5
+        , kIndexCRTStaticFuncNewArrayLength = 5
         , kIndexCRTStaticFuncDeleteArray = 6
-        , kIndexCRTStaticFuncDeleteArraySize = 7
+        , kIndexCRTStaticFuncDeleteArrayLength = 7
 
-        , kIndexCRTStaticFuncMAX = 8
+        // since C++14
+        , kIndexCRTStaticFuncDeleteSize = 8
+        , kIndexCRTStaticFuncDeleteSizeLength = 9
+        , kIndexCRTStaticFuncDeleteArraySize = 10
+        , kIndexCRTStaticFuncDeleteArraySizeLength = 11
+
+        , kIndexCRTStaticFuncMAX = 12
     };
 
 protected:
