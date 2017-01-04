@@ -385,74 +385,80 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
             }
             else
             {
-                for ( size_t index = DebugSymbol::kIndexOperationNew; index < DebugSymbol::kIndexOperationDeleteArray; ++index )
+                for ( size_t index = DebugSymbol::kIndexOperationNew; index < DebugSymbol::kIndexOperationMax; ++index )
                 {
-                    std::map<DWORD64,DebugSymbol::FuncInfo>::iterator   it = mGlobalReplacements[index].begin();
-                    const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + it->second.dwAddr );
-
-                    IMAGEHLP_LINE64     line;
-                    ZeroMemory( &line, sizeof(line) );
-                    line.SizeOfStruct = sizeof(line);
+                    for (
+                        std::map<DWORD64,DebugSymbol::FuncInfo>::iterator   it = mGlobalReplacements[index].begin();
+                        it != mGlobalReplacements[index].end();
+                        ++it
+                    )
                     {
-                        DWORD dwDisplacement = 0;
-                        const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, qwAddr, &dwDisplacement, &line );
-                        if ( !BRet )
+                        const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + it->second.dwAddr );
+
+                        IMAGEHLP_LINE64     line;
+                        ZeroMemory( &line, sizeof(line) );
+                        line.SizeOfStruct = sizeof(line);
                         {
-                            const DWORD dwErr = ::GetLastError();
+                            DWORD dwDisplacement = 0;
+                            const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, qwAddr, &dwDisplacement, &line );
+                            if ( !BRet )
+                            {
+                                const DWORD dwErr = ::GetLastError();
+                            }
                         }
-                    }
 
-                    bool isCRTFunc = true;
-                    if ( NULL == line.FileName )
-                    {
-                        isCRTFunc = false;
-                    }
-                    else
-                    {
-                        char    fileName[_MAX_PATH*2];
-                        ::lstrcpyA( fileName, line.FileName );
-                        ::_strlwr_s( fileName, sizeof(fileName)/sizeof(fileName[0]) );
-
-                        if ( NULL == ::strstr( fileName, "\\crt" ) )
+                        bool isCRTFunc = true;
+                        if ( NULL == line.FileName )
                         {
                             isCRTFunc = false;
                         }
-
-                        switch ( index )
+                        else
                         {
-                        case DebugSymbol::kIndexOperationNew:
-                            if ( NULL == ::strstr( fileName, "\\new_scalar" ) )
-                            {
-                                isCRTFunc = false;
-                            }
-                            break;
-                        case DebugSymbol::kIndexOperationDelete:
-                            if ( NULL == ::strstr( fileName, "\\delete_scalar" ) )
-                            {
-                                isCRTFunc = false;
-                            }
-                            break;
-                        case DebugSymbol::kIndexOperationNewArray:
-                            if ( NULL == ::strstr( fileName, "\\new_array" ) )
-                            {
-                                isCRTFunc = false;
-                            }
-                            break;
-                        case DebugSymbol::kIndexOperationDeleteArray:
-                            if ( NULL == ::strstr( fileName, "\\delete_array" ) )
-                            {
-                                isCRTFunc = false;
-                            }
-                            break;
+                            char    fileName[_MAX_PATH*2];
+                            ::lstrcpyA( fileName, line.FileName );
+                            ::_strlwr_s( fileName, sizeof(fileName)/sizeof(fileName[0]) );
 
-                        default:
-                            assert( false );
-                            break;
+                            if ( NULL == ::strstr( fileName, "\\crt" ) )
+                            {
+                                isCRTFunc = false;
+                            }
+
+                            switch ( index )
+                            {
+                            case DebugSymbol::kIndexOperationNew:
+                                if ( NULL == ::strstr( fileName, "\\new_scalar" ) )
+                                {
+                                    isCRTFunc = false;
+                                }
+                                break;
+                            case DebugSymbol::kIndexOperationDelete:
+                                if ( NULL == ::strstr( fileName, "\\delete_scalar" ) )
+                                {
+                                    isCRTFunc = false;
+                                }
+                                break;
+                            case DebugSymbol::kIndexOperationNewArray:
+                                if ( NULL == ::strstr( fileName, "\\new_array" ) )
+                                {
+                                    isCRTFunc = false;
+                                }
+                                break;
+                            case DebugSymbol::kIndexOperationDeleteArray:
+                                if ( NULL == ::strstr( fileName, "\\delete_array" ) )
+                                {
+                                    isCRTFunc = false;
+                                }
+                                break;
+
+                            default:
+                                assert( false );
+                                break;
+                            }
                         }
-                    }
 
-                    it->second.isCRT = isCRTFunc;
-                }
+                        it->second.isCRT = isCRTFunc;
+                    } // for it
+                } // for index
             }
         }
     }
@@ -943,6 +949,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                             DebugSymbol::FuncInfo   funcInfo;
                             funcInfo.dwAddr = addr;
                             funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
 
                             std::pair<std::map<DWORD64,DebugSymbol::FuncInfo>::iterator,bool> ret = 
                             pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNew].insert(
@@ -960,6 +967,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                             DebugSymbol::FuncInfo   funcInfo;
                             funcInfo.dwAddr = addr;
                             funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
 
                             std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
                             pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].insert(
@@ -977,6 +985,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                             DebugSymbol::FuncInfo   funcInfo;
                             funcInfo.dwAddr = addr;
                             funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
 
                             std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
                             pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDelete].insert(
@@ -994,6 +1003,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                             DebugSymbol::FuncInfo   funcInfo;
                             funcInfo.dwAddr = addr;
                             funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
 
                             std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
                             pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArray].insert(
@@ -1026,7 +1036,6 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
 DebugSymbol::DebugSymbol()
 {
     mImpl = NULL;
-    mCRTCPPisStaticLinked = false;
 }
 
 DebugSymbol::~DebugSymbol()
@@ -1044,7 +1053,6 @@ DebugSymbol::term(void)
         delete mImpl;
         mImpl = NULL;
     }
-    mCRTCPPisStaticLinked = false;
 
     return true;
 }
@@ -1163,17 +1171,27 @@ DebugSymbol::getCRTNewArrayRVA( DebugSymbol::FuncInfo* funcInfo ) const
 bool
 DebugSymbol::setCRTCPPisStaticLinked( const bool isStaticLinked )
 {
-    bool oldValue = mCRTCPPisStaticLinked;
+    if ( NULL == mImpl )
+    {
+        return false;
+    }
 
-    mCRTCPPisStaticLinked = isStaticLinked;
+    const bool result = mImpl->setCRTCPPisStaticLinked( isStaticLinked );
 
-    return oldValue;
+    return result;
 }
 
 bool
 DebugSymbol::getCRTCPPisStaticLinked( void ) const
 {
-    return mCRTCPPisStaticLinked;
+    if ( NULL == mImpl )
+    {
+        return false;
+    }
+
+    const bool result = mImpl->getCRTCPPisStaticLinked();
+
+    return result;
 }
 
 

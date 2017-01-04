@@ -73,10 +73,6 @@ public:
     bool
     getCRTNewArrayRVA( FuncInfo* funcInfo ) const;
 
-
-protected:
-    bool                mCRTCPPisStaticLinked;
-
 public:
     bool
     setCRTCPPisStaticLinked( const bool isStaticLinked );
