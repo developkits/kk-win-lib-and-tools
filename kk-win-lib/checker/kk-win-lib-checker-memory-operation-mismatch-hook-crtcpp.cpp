@@ -88,8 +88,7 @@ my_new( size_t size )
 {
     void* p = pfn_new(size);
 
-    //sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticNew, (DWORD64)p );
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationNew, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticNew, (DWORD64)p );
 
     return p;
 }
@@ -100,8 +99,7 @@ my_new_array( size_t size )
 {
     void* p = pfn_new(size);
 
-    //sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticNewArray, (DWORD64)p );
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationNewArray, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticNewArray, (DWORD64)p );
 
     return p;
 }
@@ -110,8 +108,7 @@ static
 void
 my_delete( void* p )
 {
-    //sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDelete, (DWORD64)p );
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationDelete, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDelete, (DWORD64)p );
 
     pfn_delete(p);
 
@@ -122,8 +119,7 @@ static
 void
 my_delete_array( void* p )
 {
-    //sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDeleteArray, (DWORD64)p );
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationDeleteArray, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDeleteArray, (DWORD64)p );
 
     pfn_delete_array(p);
 
@@ -134,8 +130,7 @@ static
 void
 my_delete_size( void* p, size_t size )
 {
-    //sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDeleteSize, (DWORD64)p );
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationDelete, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDeleteSize, (DWORD64)p );
 
     pfn_delete_size(p,size);
 
@@ -146,8 +141,7 @@ static
 void
 my_delete_array_size( void* p, size_t size )
 {
-    //sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDeleteArraySize, (DWORD64)p );
-    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationDeleteArray, (DWORD64)p );
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationCRTStaticDeleteArraySize, (DWORD64)p );
 
     pfn_delete_array_size(p,size);
 

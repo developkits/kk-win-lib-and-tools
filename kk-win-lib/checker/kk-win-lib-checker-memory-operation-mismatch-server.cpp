@@ -1150,10 +1150,280 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     break;
 
                 case kOperationCRTStaticNew:
+                    {
+                        bool negative = false;
+
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakAllocNull )
+                        {
+                            // skip
+                        }
+                        else
+                        {
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() != it )
+                            {
+                                if ( kOperationMalloc == it->second )
+                                {
+                                    // change
+                                    it->second = kOperationCRTStaticNew;
+                                }
+                                else
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                            }
+                            else
+                            {
+                                pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
+                                std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
+                                if ( false == ret.second )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                            }
+                        }
+
+                        if ( negative )
+                        {
+                        }
+                        else
+                        {
+                            action.header.size = sizeof(action);
+                            action.header.mode = kModeAction;
+                            action.data.action = kActionNone;
+                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                        }
+
+                    }
+                    break;
+
                 case kOperationCRTStaticNewArray:
+                    {
+                        bool negative = false;
+
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakAllocNull )
+                        {
+                            // skip
+                        }
+                        else
+                        {
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() != it )
+                            {
+                                if ( kOperationCRTStaticNew == it->second )
+                                {
+                                    // change
+                                    it->second = kOperationCRTStaticNewArray;
+                                }
+                                else
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                            }
+                            else
+                            {
+                                pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
+                                std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
+                                if ( false == ret.second )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                            }
+                        }
+
+                        if ( negative )
+                        {
+                        }
+                        else
+                        {
+                            action.header.size = sizeof(action);
+                            action.header.mode = kModeAction;
+                            action.data.action = kActionNone;
+                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                        }
+
+                    }
+                    break;
+
                 case kOperationCRTStaticDelete:
+                    {
+                        bool negative = false;
+
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakDeallocNull )
+                        {
+                            // skip
+                        }
+                        else
+                        {
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() == it )
+                            {
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
+                            }
+                            else
+                            {
+                                if ( kOperationCRTStaticNew != it->second )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                                it->second = kOperationMalloc;
+                            }
+                        }
+
+                        if ( negative )
+                        {
+                        }
+                        else
+                        {
+                            action.header.size = sizeof(action);
+                            action.header.mode = kModeAction;
+                            action.data.action = kActionNone;
+                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                        }
+
+                    }
+                    break;
+
                 case kOperationCRTStaticDeleteArray:
-                    //fdhahjkl
+                    {
+                        bool negative = false;
+
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakDeallocNull )
+                        {
+                            // skip
+                        }
+                        else
+                        {
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() == it )
+                            {
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
+                            }
+                            else
+                            {
+                                if ( kOperationCRTStaticNewArray != it->second )
+                                {
+                                    if ( luckNewArray )
+                                    {
+                                        // warn?
+                                    }
+                                    else
+                                    {
+                                        // error
+                                        action.header.size = sizeof(action);
+                                        action.header.mode = kModeAction;
+                                        if ( pThis->mDoBreak )
+                                        {
+                                            action.data.action = kActionBreak;
+                                        }
+                                        else
+                                        {
+                                            action.data.action = kActionNone;
+                                        }
+                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        negative = true;
+                                    }
+                                }
+                                it->second = kOperationCRTStaticNew;
+                            }
+                        }
+
+                        if ( negative )
+                        {
+                        }
+                        else
+                        {
+                            action.header.size = sizeof(action);
+                            action.header.mode = kModeAction;
+                            action.data.action = kActionNone;
+                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                        }
+
+                    }
                     break;
 
                 default:
@@ -1161,6 +1431,11 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     break;
                 }
             }
+            break;
+
+        case kOperationCRTStaticDeleteSize:
+        case kOperationCRTStaticDeleteArraySize:
+            assert( false );
             break;
 
         default:
