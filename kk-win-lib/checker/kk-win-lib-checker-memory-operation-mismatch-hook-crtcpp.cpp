@@ -241,6 +241,7 @@ hookCRTCPP( const HMODULE hModule )
     {
         const DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE;
         const DWORD flProtect = PAGE_READWRITE;
+        // todo: x64 limit -2G to +2G
         {
             for ( DWORD64 pAddr = reinterpret_cast<DWORD64>(hModule) - pageSize; pageSize < pAddr; pAddr -= pageSize )
             {
@@ -406,7 +407,7 @@ hookCRTCPP( const HMODULE hModule )
                                 indexHook += 1;
                                 lastInstJump = false;
                                 break;
-                            case 0x5d:
+                            case 0x5d: // pop ebp
                                 pOrigCode[indexOrig] = p;
                                 pHookCode[indexHook] = p;
                                 indexOrig += 1;
@@ -414,27 +415,44 @@ hookCRTCPP( const HMODULE hModule )
                                 lastInstJump = false;
                                 break;
                             case 0x83:
-                                pOrigCode[indexOrig+0] = p;
-                                pOrigCode[indexOrig+1] = pCode[indexOrig+1];
-                                pOrigCode[indexOrig+2] = pCode[indexOrig+2];
-                                pHookCode[indexHook+0] = p;
-                                pHookCode[indexHook+1] = pCode[indexOrig+1];
-                                pHookCode[indexHook+2] = pCode[indexOrig+2];
-                                indexOrig += 3;
-                                indexHook += 3;
-                                lastInstJump = false;
+                                if ( 0xec == pCode[indexOrig+1] )
+                                {
+                                    // sub esp, imm8
+                                    pOrigCode[indexOrig+0] = p;
+                                    pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                    pOrigCode[indexOrig+2] = pCode[indexOrig+2];
+                                    pHookCode[indexHook+0] = p;
+                                    pHookCode[indexHook+1] = pCode[indexOrig+1];
+                                    pHookCode[indexHook+2] = pCode[indexOrig+2];
+                                    indexOrig += 3;
+                                    indexHook += 3;
+                                    lastInstJump = false;
+                                }
+                                else
+                                {
+                                    assert( false );
+                                }
                                 break;
                             case 0x8b:
-                                pOrigCode[indexOrig+0] = p;
-                                pOrigCode[indexOrig+1] = pCode[indexOrig+1];
-                                pHookCode[indexHook+0] = p;
-                                pHookCode[indexHook+1] = pCode[indexOrig+1];
-                                indexOrig += 2;
-                                indexHook += 2;
-                                lastInstJump = false;
+                                if ( 0xec == pCode[indexOrig+1] )
+                                {
+                                    // mov ebp, esp
+                                    pOrigCode[indexOrig+0] = p;
+                                    pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                    pHookCode[indexHook+0] = p;
+                                    pHookCode[indexHook+1] = pCode[indexOrig+1];
+                                    indexOrig += 2;
+                                    indexHook += 2;
+                                    lastInstJump = false;
+                                }
+                                else
+                                {
+                                    assert( false );
+                                }
                                 break;
                             case 0xeb:
                                 {
+                                    // jmp rel8
                                     pOrigCode[indexOrig+0] = p;
                                     pOrigCode[indexOrig+1] = pCode[indexOrig+1];
                                     pHookCode[indexHook+0] = 0xe9;
@@ -448,6 +466,7 @@ hookCRTCPP( const HMODULE hModule )
                                 break;
                             case 0xe9:
                                 {
+                                    // jmp rel32
                                     pOrigCode[indexOrig+0] = p;
                                     pOrigCode[indexOrig+1] = pCode[indexOrig+1];
                                     pOrigCode[indexOrig+2] = pCode[indexOrig+2];
@@ -476,6 +495,25 @@ hookCRTCPP( const HMODULE hModule )
                                     {
                                         indexPatch = indexOrig - sizeof(HookJump);
                                     }
+                                }
+                                break;
+                            case 0xff:
+                                if ( 0x75 == pCode[indexOrig+1] )
+                                {
+                                    // push [ebp+imm8]
+                                    pOrigCode[indexOrig+0] = p;
+                                    pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                    pOrigCode[indexOrig+2] = pCode[indexOrig+2];
+                                    pHookCode[indexHook+0] = p;
+                                    pHookCode[indexHook+1] = pCode[indexOrig+1];
+                                    pHookCode[indexHook+2] = pCode[indexOrig+2];
+                                    indexOrig += 3;
+                                    indexHook += 3;
+                                    lastInstJump = false;
+                                }
+                                else
+                                {
+                                    assert( false );
                                 }
                                 break;
                             default:
