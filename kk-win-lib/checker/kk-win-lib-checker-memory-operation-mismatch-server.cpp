@@ -1426,16 +1426,143 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                     }
                     break;
 
+                case kOperationCRTStaticDeleteSize:
+                    {
+                        bool negative = false;
+
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakDeallocNull )
+                        {
+                            // skip
+                        }
+                        else
+                        {
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() == it )
+                            {
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
+                            }
+                            else
+                            {
+                                if ( kOperationCRTStaticNew != it->second )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+                                it->second = kOperationCRTStaticNew;
+                            }
+                        }
+
+                        if ( negative )
+                        {
+                        }
+                        else
+                        {
+                            action.header.size = sizeof(action);
+                            action.header.mode = kModeAction;
+                            action.data.action = kActionNone;
+                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                        }
+
+                    }
+                    break;
+                case kOperationCRTStaticDeleteArraySize:
+                    {
+                        bool negative = false;
+
+                        if ( 0 == memory.pointer && false == pThis->mNeedBreakDeallocNull )
+                        {
+                            // skip
+                        }
+                        else
+                        {
+                            mapRecord::iterator it = mapMemory.find( memory.pointer );
+                            if ( mapMemory.end() == it )
+                            {
+                                // error
+                                action.header.size = sizeof(action);
+                                action.header.mode = kModeAction;
+                                if ( pThis->mDoBreak )
+                                {
+                                    action.data.action = kActionBreak;
+                                }
+                                else
+                                {
+                                    action.data.action = kActionNone;
+                                }
+                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                negative = true;
+                            }
+                            else
+                            {
+                                if ( kOperationCRTStaticNewArray != it->second )
+                                {
+                                    if ( luckNewArray )
+                                    {
+                                        // warn?
+                                    }
+                                    else
+                                    {
+                                        // error
+                                        action.header.size = sizeof(action);
+                                        action.header.mode = kModeAction;
+                                        if ( pThis->mDoBreak )
+                                        {
+                                            action.data.action = kActionBreak;
+                                        }
+                                        else
+                                        {
+                                            action.data.action = kActionNone;
+                                        }
+                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        negative = true;
+                                    }
+                                }
+                                it->second = kOperationCRTStaticNewArray;
+                            }
+                        }
+
+                        if ( negative )
+                        {
+                        }
+                        else
+                        {
+                            action.header.size = sizeof(action);
+                            action.header.mode = kModeAction;
+                            action.data.action = kActionNone;
+                            pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                        }
+
+                    }
+                    break;
+
                 default:
                     assert( false );
                     break;
                 }
             }
-            break;
-
-        case kOperationCRTStaticDeleteSize:
-        case kOperationCRTStaticDeleteArraySize:
-            assert( false );
             break;
 
         default:
