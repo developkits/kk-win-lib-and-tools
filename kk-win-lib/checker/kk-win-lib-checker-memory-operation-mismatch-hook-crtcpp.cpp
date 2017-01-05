@@ -534,7 +534,7 @@ hookCRTCPP( const HMODULE hModule )
 #if defined(_M_IX86)
                             pHookCode[indexHook] = sHookJump.opJmp;
                             DWORD* pAddr = reinterpret_cast<DWORD*>(&pHookCode[indexHook+1]);
-                            const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+sizeof(HookJump)]);
+                            const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexPatch+0+sizeof(HookJump)]);
                             const LPBYTE pAddrBase = reinterpret_cast<LPBYTE>(&pHookCode[indexHook+sizeof(HookJump)]);
                             *pAddr = addr - pAddrBase;
                             indexHook += sizeof(HookJump);
