@@ -666,7 +666,9 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
         enumDataType    enmTypeReturn = kDataTypeNone;
         DWORD           dwCallConversion = 0;
         enumDataType    enmTypeArg0 = kDataTypeNone;
+        enumDataType    enmTypeArg1 = kDataTypeNone;
         bool            isArgSingle = true;
+        bool            isArgDouble = true;
 
 
 #if 0
@@ -794,13 +796,24 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                 }
             }
             const size_t nArgCount = 4;
-            if ( !(
+            if ( (
                 (1 == nCount )
                 && (1 == nCountChild)
                 )
             )
             {
+                isArgSingle = true;
+                isArgDouble = false;
+            }
+            else
+            if ( (
+                (2 == nCount )
+                && (2 == nCountChild)
+                )
+            )
+            {
                 isArgSingle = false;
+                isArgDouble = true;
             }
 
             if ( nCountChild < nArgCount )
@@ -887,6 +900,11 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                                     {
                                         enmTypeArg0 = kDataTypeVoidPointer;
                                     }
+                                    else
+                                    if ( 1 == index )
+                                    {
+                                        enmTypeArg1 = kDataTypeVoidPointer;
+                                    }
                                     break;
                                 }
                             }
@@ -911,6 +929,11 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                                 {
                                     enmTypeArg0 = kDataTypeVoid;
                                 }
+                                else
+                                if ( 1 == index )
+                                {
+                                    enmTypeArg1 = kDataTypeVoid;
+                                }
                                 break;
                             case 7: // btUInt
                                 if ( 0 == index )
@@ -925,6 +948,20 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                                     }
 
                                     enmTypeArg0 = kDataTypeUInt;
+                                }
+                                else
+                                if ( 1 == index )
+                                {
+                                    ULONG64 length = 0;
+                                    {
+                                        const BOOL BRet = pThis->mSymGetTypeInfo( hProcess, dwModuleBase, dwTypeIndex, TI_GET_LENGTH, &length );
+                                        if ( !BRet )
+                                        {
+                                            const DWORD dwErr = ::GetLastError();
+                                        }
+                                    }
+
+                                    enmTypeArg1 = kDataTypeUInt;
                                 }
                                 break;
                             default:
@@ -941,7 +978,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
             }
 
 #if 1
-            if ( isArgSingle )
+            if ( isArgSingle || isArgDouble )
             {
                 char    buff[1024];
                 ::wsprintfA( buff, "%p %08x %4u %4u %s\n", (void *)pSymInfo->Address, pSymInfo->Index, pSymInfo->Tag, pSymInfo->Index, pSymInfo->Name );
