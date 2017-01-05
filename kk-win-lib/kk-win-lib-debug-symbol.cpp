@@ -1078,49 +1078,11 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                 const DWORD64   addr = pSymInfo->Address - dwModuleBase;
                 switch ( enmOperation )
                 {
-#if 1
                 case kOperationNew:
                 case kOperationNewArray:
                     // ignore
                     break;
-#else
-                case kOperationNew:
-                    if ( kDataTypeVoidPointer == enmTypeReturn )
-                    {
-                        if ( kDataTypeUInt == enmTypeArg0 )
-                        {
-                            DebugSymbol::FuncInfo   funcInfo;
-                            funcInfo.dwAddr = addr;
-                            funcInfo.size = pSymInfo->Size;
-                            funcInfo.isCRT = false;
 
-                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo>::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNew].insert(
-                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
-                                );
-                            assert( true == ret.second );
-                        }
-                    }
-                    break;
-                case kOperationNewArray:
-                    if ( kDataTypeVoidPointer == enmTypeReturn )
-                    {
-                        if ( kDataTypeUInt == enmTypeArg0 )
-                        {
-                            DebugSymbol::FuncInfo   funcInfo;
-                            funcInfo.dwAddr = addr;
-                            funcInfo.size = pSymInfo->Size;
-                            funcInfo.isCRT = false;
-
-                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArray].insert(
-                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
-                                );
-                            assert( true == ret.second );
-                        }
-                    }
-                    break;
-#endif
                 case kOperationDelete:
                     if ( kDataTypeVoid == enmTypeReturn )
                     {
@@ -1142,6 +1104,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                         }
                     }
                     break;
+
                 case kOperationDeleteArray:
                     if ( kDataTypeVoid == enmTypeReturn )
                     {
