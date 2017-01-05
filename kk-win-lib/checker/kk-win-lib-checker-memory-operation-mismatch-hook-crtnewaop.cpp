@@ -51,6 +51,10 @@ sModule = NULL;
 
 static
 DWORD64
+sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationMAX];
+
+static
+DWORD64
 sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncMAX];
 
 static
@@ -190,6 +194,7 @@ hookCRTNewAOP( const HMODULE hModule )
                     }
 
                     // no space
+                    assert( false ); // todo: change method, hook-crtcpp
                     haveSpace = false;
                     break;
                 }
@@ -289,8 +294,8 @@ hookCRTNewAOP( const HMODULE hModule )
                         pCode[index] = pHookCode[index];
                     }
 
-                    assert( 0 != sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNew] );
-                    size_t* crtNew = reinterpret_cast<size_t*>(p + sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNew]);
+                    assert( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew] );
+                    size_t* crtNew = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew]);
                     pfn_new = reinterpret_cast<PFN_new>(*crtNew);
                 }
 
@@ -507,6 +512,17 @@ bool
 hookMemoryOperationMismatchCRTNewAOP( const HMODULE hModule, MemoryOperationMismatchClient* pMOM )
 {
     bool result = true;
+    {
+        const bool bRet = pMOM->getCRTOffsetIAT( sCRTOffsetIAT );
+        if ( !bRet )
+        {
+            result = false;
+        }
+        else
+        {
+            sMemoryOperationMismatch = pMOM;
+        }
+    }
     {
         const bool bRet = pMOM->getCRTStaticFunc( sCRTStaticFunc );
         if ( !bRet )
