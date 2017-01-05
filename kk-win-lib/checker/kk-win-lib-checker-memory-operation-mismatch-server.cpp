@@ -644,7 +644,17 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             }
                             funcInfo = NULL;
                         } // for indexOperation
-                    }
+
+                        if (
+                            module.func.dwCRTStaticDeleteArray == module.func.dwCRTStaticDeleteSize
+                            && module.func.dwCRTStaticDeleteArrayLength == module.func.dwCRTStaticDeleteSizeLength
+                        )
+                        {
+                            module.func.dwCRTStaticDeleteSize = 0;
+                            module.func.dwCRTStaticDeleteSizeLength = 0;
+                        }
+
+                    } // includeCRTNewArray
                 }
 
                 if ( includeCRTNewArray )
