@@ -459,7 +459,7 @@ hookCRTCPP( const HMODULE hModule )
                                     DWORD* pAddr = reinterpret_cast<DWORD*>(&pHookCode[indexHook+1]);
                                     const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+2] + pCode[indexOrig+1]);
                                     const LPBYTE pAddrBase = reinterpret_cast<LPBYTE>(&pHookCode[indexHook+sizeof(HookJump)]);
-                                    *pAddr = addr - pAddrBase;
+                                    *pAddr = static_cast<DWORD>(addr - pAddrBase);
                                     indexOrig += 2;
                                     indexHook += sizeof(HookJump);
                                 }
@@ -593,7 +593,7 @@ hookCRTCPP( const HMODULE hModule )
                                 DWORD* pAddr = reinterpret_cast<DWORD*>(&pCode[indexPatch+1]);
                                 const LPBYTE pAddrBase = reinterpret_cast<const LPBYTE>(&pCode[indexPatch+0+sizeof(HookJump)]);
                                 const LPBYTE addr = reinterpret_cast<const LPBYTE>(pTrampoline->longJump);
-                                *pAddr = addr - pAddrBase;
+                                *pAddr = static_cast<DWORD>(addr - pAddrBase);
                             }
 
                             {
