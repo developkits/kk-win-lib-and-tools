@@ -58,6 +58,7 @@ typedef BOOL (WINAPI *PFN_SymEnumSymbols)(HANDLE hProcess, ULONG64 BaseOfDll, PC
 typedef BOOL (WINAPI *PFN_SymGetTypeInfo)(HANDLE hProcess, DWORD64 ModBase, ULONG TypeId, IMAGEHLP_SYMBOL_TYPE_INFO GetType, PVOID pInfo);
 typedef BOOL (WINAPI *PFN_SymGetModuleInfo64)(HANDLE hProcess, DWORD64 ModBase, PIMAGEHLP_MODULE64 ModuleInfo);
 typedef BOOL (WINAPI *PFN_SymGetLineFromAddr64)(HANDLE hProcess, DWORD64 qwAddr, DWORD* pdwDisplacement, PIMAGEHLP_LINE64 line);
+typedef BOOL (WINAPI *PFN_SymEnumLines)(HANDLE hProcess, DWORD64 qwAddr, PCSTR Obj, PCSTR File, PSYM_ENUMLINES_CALLBACK EnumLinesCallback, PVOID UserContext);
 
 
 class DebugSymbol::DebugSymbolImpl
@@ -105,6 +106,21 @@ protected:
     bool
     matchSymTag( const ULONG Index, const enum SymTagEnum tag);
 
+
+protected:
+    struct SearchCRTSource
+    {
+        DWORD64         addr;
+        const char*     Obj;
+        const char*     File;
+        bool            found;
+    };
+
+    static
+    BOOL
+    CALLBACK
+    symEnumLinesProc( PSRCCODEINFO pLineInfo, PVOID UserContext );
+
 protected:
     HANDLE          mHandleProcess;
     DWORD64         mModuleBase;
@@ -123,6 +139,7 @@ protected:
     PFN_SymGetTypeInfo      mSymGetTypeInfo;
     PFN_SymGetModuleInfo64  mSymGetModuleInfo64;
     PFN_SymGetLineFromAddr64    mSymGetLineFromAddr64;
+    PFN_SymEnumLines        mSymEnumLines;
 
     //DWORD64         mGlobalReplacements[4];
 
@@ -155,6 +172,7 @@ DebugSymbol::DebugSymbolImpl::DebugSymbolImpl()
     mSymGetTypeInfo = NULL;
     mSymGetModuleInfo64 = NULL;
     mSymGetLineFromAddr64 = NULL;
+    mSymEnumLines = NULL;
 
     //ZeroMemory( mGlobalReplacements, sizeof(mGlobalReplacements) );
     for ( size_t index = 0; index < kIndexOperationMax; ++index )
@@ -194,6 +212,7 @@ DebugSymbol::DebugSymbolImpl::term( void )
     mSymGetTypeInfo = NULL;
     mSymGetModuleInfo64 = NULL;
     mSymGetLineFromAddr64 = NULL;
+    mSymEnumLines = NULL;
 
     if ( NULL != mDbgHelp )
     {
@@ -245,6 +264,7 @@ DebugSymbol::DebugSymbolImpl::init( const HANDLE hProcess )
             mSymGetTypeInfo = (PFN_SymGetTypeInfo)::GetProcAddress( hModule, "SymGetTypeInfo" );
             mSymGetModuleInfo64 = (PFN_SymGetModuleInfo64)::GetProcAddress( hModule, "SymGetModuleInfo64" );
             mSymGetLineFromAddr64 = (PFN_SymGetLineFromAddr64)::GetProcAddress( hModule, "SymGetLineFromAddr64" );
+            mSymEnumLines = (PFN_SymEnumLines)::GetProcAddress( hModule, "SymEnumLines" );
 
         }
 
@@ -395,72 +415,39 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
                     {
                         const DWORD64 qwAddr = reinterpret_cast<const DWORD64>( ((LPBYTE)mModuleBase) + it->second.dwAddr );
 
-                        IMAGEHLP_LINE64     line;
-                        ZeroMemory( &line, sizeof(line) );
-                        line.SizeOfStruct = sizeof(line);
-                        {
-                            DWORD dwDisplacement = 0;
-                            const BOOL BRet = mSymGetLineFromAddr64( mHandleProcess, qwAddr, &dwDisplacement, &line );
-                            if ( !BRet )
-                            {
-                                const DWORD dwErr = ::GetLastError();
-                            }
-                        }
+                        // SymGetLineFromAddr64 not work, unified function.
+                        SearchCRTSource     context;
+                        ZeroMemory( &context, sizeof(context) );
+                        context.addr = qwAddr;
 
-                        bool isCRTFunc = true;
-                        if ( NULL == line.FileName )
+                        const char* searchFile = NULL;
                         {
-                            isCRTFunc = false;
-                        }
-                        else
-                        {
-                            char    fileName[_MAX_PATH*2];
-                            ::lstrcpyA( fileName, line.FileName );
-                            ::_strlwr_s( fileName, sizeof(fileName)/sizeof(fileName[0]) );
-
-                            if ( NULL == ::strstr( fileName, "\\crt" ) )
-                            {
-                                isCRTFunc = false;
-                            }
-
                             switch ( index )
                             {
                             case DebugSymbol::kIndexOperationNew:
-                                if ( NULL == ::strstr( fileName, "\\new_scalar" ) )
-                                {
-                                    isCRTFunc = false;
-                                }
+                                context.File = "\\new_scalar.cpp";
+                                searchFile = "*\\new_scalar.cpp";
                                 break;
                             case DebugSymbol::kIndexOperationDelete:
-                                if ( NULL == ::strstr( fileName, "\\delete_scalar" ) )
-                                {
-                                    isCRTFunc = false;
-                                }
+                                context.File = "\\delete_scalar.cpp";
+                                searchFile = "*\\delete_scalar.cpp";
                                 break;
                             case DebugSymbol::kIndexOperationNewArray:
-                                if ( NULL == ::strstr( fileName, "\\new_array" ) )
-                                {
-                                    isCRTFunc = false;
-                                }
+                                context.File = "\\new_array.cpp";
+                                searchFile = "*\\new_array.cpp";
                                 break;
                             case DebugSymbol::kIndexOperationDeleteArray:
-                                if ( NULL == ::strstr( fileName, "\\delete_array" ) )
-                                {
-                                    isCRTFunc = false;
-                                }
+                                context.File = "\\delete_array.cpp";
+                                searchFile = "*\\delete_array.cpp";
                                 break;
 
                             case DebugSymbol::kIndexOperationDeleteSize:
-                                if ( NULL == ::strstr( fileName, "\\delete_scalar_size" ) )
-                                {
-                                    isCRTFunc = false;
-                                }
+                                context.File = "\\delete_scalar_size.cpp";
+                                searchFile = "*\\delete_scalar_size.cpp";
                                 break;
                             case DebugSymbol::kIndexOperationDeleteArraySize:
-                                if ( NULL == ::strstr( fileName, "\\delete_array_size" ) )
-                                {
-                                    isCRTFunc = false;
-                                }
+                                context.File = "\\delete_array_size.cpp";
+                                searchFile = "*\\delete_array_size.cpp";
                                 break;
 
                             default:
@@ -469,7 +456,23 @@ DebugSymbol::DebugSymbolImpl::findGlobalReplacements( const DWORD64 moduleBase, 
                             }
                         }
 
-                        it->second.isCRT = isCRTFunc;
+                        {
+                            const BOOL BRet = mSymEnumLines( mHandleProcess, mModuleBase, NULL, searchFile, symEnumLinesProc, &context );
+                            if ( !BRet )
+                            {
+                                const DWORD dwErr = ::GetLastError();
+                            }
+                        }
+
+                        if ( context.found )
+                        {
+                            it->second.isCRT = true;
+                        }
+                        else
+                        {
+                            it->second.isCRT = false;
+                        }
+
                     } // for it
                 } // for index
             }
@@ -1070,13 +1073,17 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                 }
             }
 
-#if 0
             if ( isArgDouble )
             {
                 const DWORD64   addr = pSymInfo->Address - dwModuleBase;
                 switch ( enmOperation )
                 {
-#if 0
+#if 1
+                case kOperationNew:
+                case kOperationNewArray:
+                    // ignore
+                    break;
+#else
                 case kOperationNew:
                     if ( kDataTypeVoidPointer == enmTypeReturn )
                     {
@@ -1128,7 +1135,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                             funcInfo.isCRT = false;
 
                             std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDelete].insert(
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteSize].insert(
                                 std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
                                 );
                             assert( true == ret.second );
@@ -1149,7 +1156,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                             funcInfo.isCRT = false;
 
                             std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
-                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArray].insert(
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArraySize].insert(
                                 std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
                                 );
                             assert( true == ret.second );
@@ -1162,7 +1169,6 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     break;
                 }
             }
-#endif
 
 #if defined(_DEBUG)
             ::OutputDebugStringA( "" );
@@ -1172,6 +1178,51 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
 
         } // SymTagFunctionType
 
+    }
+
+    return TRUE;
+}
+
+
+//static
+BOOL
+CALLBACK
+DebugSymbol::DebugSymbolImpl::symEnumLinesProc( PSRCCODEINFO pLineInfo, PVOID UserContext )
+{
+    SearchCRTSource* pSearch = reinterpret_cast<SearchCRTSource*>(UserContext);
+    if ( NULL == pLineInfo )
+    {
+        return FALSE;
+    }
+
+#if 0
+    {
+        char    buff[2048];
+        ::wsprintfA( buff, "%p %s(%u) %s\n", pLineInfo->Address, pLineInfo->FileName, pLineInfo->LineNumber, pLineInfo->Obj );
+        ::OutputDebugStringA( buff );
+    }
+#endif
+
+    if ( pLineInfo->Address == pSearch->addr )
+    {
+        if ( NULL != ::strstr( pLineInfo->FileName, "\\crt" ) )
+        {
+            if ( NULL != pSearch->File )
+            {
+                if ( NULL != ::strstr( pLineInfo->FileName, pSearch->File ) )
+                {
+                    pSearch->found = true;
+#if 1
+                    {
+                        char    buff[2048];
+                        ::wsprintfA( buff, " %p %s(%u) %s\n", pLineInfo->Address, pLineInfo->FileName, pLineInfo->LineNumber, pLineInfo->Obj );
+                        ::OutputDebugStringA( buff );
+                    }
+#endif
+                    return FALSE;
+                }
+            }
+        }
     }
 
     return TRUE;
