@@ -457,7 +457,7 @@ hookCRTCPP( const HMODULE hModule )
                                     pOrigCode[indexOrig+1] = pCode[indexOrig+1];
                                     pHookCode[indexHook+0] = 0xe9;
                                     DWORD* pAddr = reinterpret_cast<DWORD*>(&pHookCode[indexHook+1]);
-                                    const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+2] + pCode[indexOrig+1]);
+                                    const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+2] + *(char*)(&pCode[indexOrig+1]));
                                     const LPBYTE pAddrBase = reinterpret_cast<LPBYTE>(&pHookCode[indexHook+sizeof(HookJump)]);
                                     *pAddr = static_cast<DWORD>(addr - pAddrBase);
                                     indexOrig += 2;
@@ -476,7 +476,7 @@ hookCRTCPP( const HMODULE hModule )
 #if defined(_M_IX86)
                                     pHookCode[indexHook+0] = 0xe9;
                                     DWORD* pAddr = reinterpret_cast<DWORD*>(&pHookCode[indexHook+1]);
-                                    const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+sizeof(HookJump)] + *((DWORD*)&pCode[indexOrig+1]));
+                                    const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+sizeof(HookJump)] + *((LONG*)&pCode[indexOrig+1]));
                                     const LPBYTE pAddrBase = reinterpret_cast<LPBYTE>(&pHookCode[indexHook+sizeof(HookJump)]);
                                     *pAddr = addr - pAddrBase;
                                     indexOrig += sizeof(HookJump);
@@ -485,7 +485,7 @@ hookCRTCPP( const HMODULE hModule )
 #if defined(_M_X64)
                                     memcpy( &pHookCode[indexHook], &sLongJump, sizeof(sLongJump) );
                                     LongJump* pAddrJump = reinterpret_cast<LongJump*>(&pHookCode[indexHook]);
-                                    const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+sizeof(HookJump)] + *((DWORD*)&pCode[indexOrig+1]));
+                                    const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+sizeof(HookJump)] + *((LONG*)&pCode[indexOrig+1]));
                                     pAddrJump->absAddr = reinterpret_cast<DWORD64>(addr);
                                     indexOrig += sizeof(HookJump);
                                     indexHook += sizeof(sLongJump);
