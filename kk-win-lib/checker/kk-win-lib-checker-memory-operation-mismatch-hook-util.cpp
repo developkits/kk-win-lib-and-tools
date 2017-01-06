@@ -65,6 +65,63 @@ getAlignedPage( LPVOID pAddr, const DWORD pageSize )
     return result;
 }
 
+static const DWORD64 limit31bit = 0x000000007fffffffULL;
+static const DWORD64 limit32bit = 0x00000000ffffffffULL;
+static const DWORD64 limit64bit = 0xffffffffffffffffULL;
+
+static
+const DWORD64
+getLimitPageBackword( const DWORD64 pAddr, const DWORD64 pageSize )
+{
+    DWORD64 addr = 0;
+
+#if defined(_M_IX86)
+    addr = pageSize;
+#endif // defined(_M_IX86)
+
+#if defined(_M_X64)
+    if ( pAddr < limit31bit )
+    {
+        addr = pageSize;
+    }
+    else
+    {
+        addr = (pAddr+pageSize)-limit31bit;
+    }
+#endif // defined(_M_X64)
+
+    addr = (size_t)getAlignedPage( (LPVOID)addr, (const DWORD)pageSize );
+
+    return addr;
+}
+
+static
+const DWORD64
+getLimitPageForward( const DWORD64 pAddr, const DWORD64 pageSize )
+{
+    DWORD64 addr = 0;
+
+#if defined(_M_IX86)
+    addr = limit32bit-pageSize;
+#endif // defined(_M_IX86)
+
+#if defined(_M_X64)
+    if ( (limit64bit-limit31bit) < pAddr )
+    {
+        addr = limit64bit-pageSize;
+    }
+    else
+    {
+        addr = pAddr + limit31bit;
+    }
+#endif // defined(_M_X64)
+
+    addr = (size_t)getAlignedPage( (LPVOID)addr, (const DWORD)pageSize );
+
+    return addr;
+}
+
+
 
 
 const DWORD
@@ -143,10 +200,9 @@ trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr )
         const DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE;
         const DWORD flProtect = PAGE_READWRITE;
 
-        // todo: x64 limit -2G to +2G
         {
             const DWORD64 pAddrStart = reinterpret_cast<DWORD64>(getAlignedPage(maxAddr,pageSize));
-            const DWORD64 pAddrEnd = pageSize;
+            const DWORD64 pAddrEnd = getLimitPageBackword(pAddrStart, pageSize);
 
             for (
                 DWORD64 pAddr = pAddrStart - pageSize;
@@ -162,10 +218,12 @@ trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr )
                 }
             }
         }
+
         if ( NULL == pTrampolinePage )
         {
             const DWORD64 pAddrStart = reinterpret_cast<DWORD64>(getAlignedPage(minAddr,pageSize));
-            const DWORD64 pAddrEnd = (-1)-pageSize;
+            const DWORD64 pAddrEnd = getLimitPageForward(pAddrStart, pageSize);
+
             for (
                 DWORD64 pAddr = pAddrStart + pageSize*16;
                 pAddr < pAddrEnd;
