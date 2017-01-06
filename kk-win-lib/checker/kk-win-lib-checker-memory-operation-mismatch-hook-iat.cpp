@@ -27,6 +27,7 @@
 #include <windows.h>
 
 #include "kk-win-lib-checker-memory-operation-mismatch-hook-iat.h"
+#include "kk-win-lib-checker-memory-operation-mismatch-hook-util.h"
 
 
 
@@ -320,24 +321,6 @@ my_aligned_recalloc(void* p, size_t num, size_t size, size_t align)
 
 
 
-static
-const DWORD
-getPageSize(void)
-{
-    DWORD   value = 4*1024;
-
-    SYSTEM_INFO     info;
-    {
-        ::GetSystemInfo( &info );
-        if ( 0 != info.dwPageSize )
-        {
-            value = info.dwPageSize;
-        }
-    }
-
-    return value;
-}
-
 
 static
 bool
@@ -348,7 +331,7 @@ hookCRTbyIAT( const HMODULE hModule )
         return false;
     }
 
-    const DWORD64   pageSize = getPageSize();
+    const DWORD64   pageSize = hookutil::getPageSize();
 
     DWORD64     minOffset = -1;
     DWORD64     maxOffset = 0;
@@ -598,7 +581,7 @@ unhookCRTbyIAT( void )
         return false;
     }
 
-    const DWORD64   pageSize = getPageSize();
+    const DWORD64   pageSize = hookutil::getPageSize();
 
     DWORD64     minOffset = -1;
     DWORD64     maxOffset = 0;

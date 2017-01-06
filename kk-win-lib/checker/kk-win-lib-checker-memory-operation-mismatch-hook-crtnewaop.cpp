@@ -27,6 +27,7 @@
 #include <windows.h>
 
 #include "kk-win-lib-checker-memory-operation-mismatch-hook-crtnewaop.h"
+#include "kk-win-lib-checker-memory-operation-mismatch-hook-util.h"
 
 
 
@@ -129,25 +130,6 @@ BYTE        sOrigCode[sizeof(sHookJump)];
 
 
 static
-const DWORD
-getPageSize(void)
-{
-    DWORD   value = 4*1024;
-
-    SYSTEM_INFO     info;
-    {
-        ::GetSystemInfo( &info );
-        if ( 0 != info.dwPageSize )
-        {
-            value = info.dwPageSize;
-        }
-    }
-
-    return value;
-}
-
-
-static
 bool
 hookCRTNewAOP( const HMODULE hModule )
 {
@@ -156,7 +138,7 @@ hookCRTNewAOP( const HMODULE hModule )
         return false;
     }
 
-    const DWORD64   pageSize = getPageSize();
+    const DWORD64   pageSize = hookutil::getPageSize();
 
     DWORD64     minOffset = -1;
     DWORD64     maxOffset = 0;
@@ -365,7 +347,7 @@ unhookCRTNewAOP( void )
         return false;
     }
 
-    const DWORD64   pageSize = getPageSize();
+    const DWORD64   pageSize = hookutil::getPageSize();
 
     DWORD64     minOffset = -1;
     DWORD64     maxOffset = 0;

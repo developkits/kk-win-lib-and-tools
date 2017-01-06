@@ -27,6 +27,7 @@
 #include <windows.h>
 
 #include "kk-win-lib-checker-memory-operation-mismatch-hook-crtcpp.h"
+#include "kk-win-lib-checker-memory-operation-mismatch-hook-util.h"
 
 
 
@@ -209,25 +210,6 @@ struct Trampoline
 
 
 static
-const DWORD
-getPageSize(void)
-{
-    DWORD   value = 4*1024;
-
-    SYSTEM_INFO     info;
-    {
-        ::GetSystemInfo( &info );
-        if ( 0 != info.dwPageSize )
-        {
-            value = info.dwPageSize;
-        }
-    }
-
-    return value;
-}
-
-
-static
 bool
 hookCRTCPP( const HMODULE hModule )
 {
@@ -236,7 +218,7 @@ hookCRTCPP( const HMODULE hModule )
         return false;
     }
 
-    const DWORD64   pageSize = getPageSize();
+    const DWORD64   pageSize = hookutil::getPageSize();
 
     {
         const DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE;
@@ -735,7 +717,7 @@ unhookCRTCPP( void )
         return false;
     }
 
-    const DWORD64   pageSize = getPageSize();
+    const DWORD64   pageSize = hookutil::getPageSize();
 
     assert( sizeof(size_t) == sizeof(void*) );
 
