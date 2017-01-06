@@ -142,9 +142,15 @@ trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr )
     {
         const DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE;
         const DWORD flProtect = PAGE_READWRITE;
+
         // todo: x64 limit -2G to +2G
         {
-            for ( DWORD64 pAddr = reinterpret_cast<DWORD64>(getAlignedPage(maxAddr,pageSize)) - pageSize; pageSize < pAddr; pAddr -= pageSize )
+            const DWORD64 pAddrStart = reinterpret_cast<DWORD64>(getAlignedPage(maxAddr,pageSize));
+            for (
+                DWORD64 pAddr = pAddrStart - pageSize;
+                pageSize < pAddr;
+                pAddr -= pageSize
+            )
             {
                 LPVOID p = ::VirtualAlloc( (LPVOID)pAddr, (size_t)pageSize, flAllocationType, flProtect );
                 if ( NULL != p )
@@ -156,7 +162,12 @@ trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr )
         }
         if ( NULL == pTrampolinePage )
         {
-            for ( DWORD64 pAddr = reinterpret_cast<DWORD64>(getAlignedPage(minAddr,pageSize)) + pageSize*16; pAddr < (-1)-pageSize; pAddr += pageSize )
+            const DWORD64 pAddrStart = reinterpret_cast<DWORD64>(getAlignedPage(minAddr,pageSize));
+            for (
+                DWORD64 pAddr = pAddrStart + pageSize*16;
+                pAddr < (-1)-pageSize;
+                pAddr += pageSize
+            )
             {
                 LPVOID p = ::VirtualAlloc( (LPVOID)pAddr, (size_t)pageSize, flAllocationType, flProtect );
                 if ( NULL != p )
