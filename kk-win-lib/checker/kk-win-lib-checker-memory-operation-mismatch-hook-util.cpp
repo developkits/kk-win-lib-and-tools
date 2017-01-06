@@ -146,9 +146,11 @@ trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr )
         // todo: x64 limit -2G to +2G
         {
             const DWORD64 pAddrStart = reinterpret_cast<DWORD64>(getAlignedPage(maxAddr,pageSize));
+            const DWORD64 pAddrEnd = pageSize;
+
             for (
                 DWORD64 pAddr = pAddrStart - pageSize;
-                pageSize < pAddr;
+                pAddrEnd < pAddr;
                 pAddr -= pageSize
             )
             {
@@ -163,9 +165,10 @@ trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr )
         if ( NULL == pTrampolinePage )
         {
             const DWORD64 pAddrStart = reinterpret_cast<DWORD64>(getAlignedPage(minAddr,pageSize));
+            const DWORD64 pAddrEnd = (-1)-pageSize;
             for (
                 DWORD64 pAddr = pAddrStart + pageSize*16;
-                pAddr < (-1)-pageSize;
+                pAddr < pAddrEnd;
                 pAddr += pageSize
             )
             {
