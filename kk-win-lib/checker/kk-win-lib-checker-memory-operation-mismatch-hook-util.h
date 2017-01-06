@@ -40,6 +40,9 @@ LPVOID
 trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr );
 
 bool
+tranpolinePageDropWriteOperation( LPVOID pTrampolinePage );
+
+bool
 trampolinePageDeallocate( LPVOID pTrampolinePage );
 
 

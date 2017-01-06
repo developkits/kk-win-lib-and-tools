@@ -103,6 +103,35 @@ trampolinePageDeallocate( LPVOID pTrampolinePage )
     return result;
 }
 
+bool
+tranpolinePageDropWriteOperation( LPVOID pTrampolinePage, const DWORD changeSize )
+{
+    bool result = true;
+
+    const size_t size = static_cast<const size_t>(changeSize);
+    {
+        DWORD dwProtect = 0;
+
+        const BOOL BRet = ::VirtualProtect( (LPVOID)pTrampolinePage, size, PAGE_EXECUTE_READ, &dwProtect );
+        if ( !BRet )
+        {
+            const DWORD dwErr = ::GetLastError();
+            result = false;
+        }
+    }
+
+    {
+        HANDLE hProcess = ::GetCurrentProcess();
+        const BOOL BRet = ::FlushInstructionCache( hProcess, pTrampolinePage, size );
+        if ( !BRet )
+        {
+            const DWORD dwErr = ::GetLastError();
+        }
+    }
+
+    return result;
+}
+
 LPVOID
 trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr )
 {
