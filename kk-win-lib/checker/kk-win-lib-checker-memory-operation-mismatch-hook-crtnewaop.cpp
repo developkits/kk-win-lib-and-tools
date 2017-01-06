@@ -76,6 +76,7 @@ static
 void*
 my_new_array( size_t size )
 {
+    //void* p = pfn_new_array(size);
     void* p = pfn_new(size);
 
     sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationNewArray, (DWORD64)p );
@@ -89,7 +90,7 @@ static
 LPVOID      sPageTrampoline  = NULL;
 
 
-#if defined(_M_IX86)
+#if defined(_M_IX86) || defined(_M_X64)
 
 #include <pshpack1.h>
 struct HookJump {
@@ -99,16 +100,15 @@ struct HookJump {
 #include <poppack.h>
 
 static
+const
 HookJump    sHookJump = { 0xe9, 0 };
-static
-BYTE        sOrigCode[sizeof(sHookJump)];
-
 
 #endif // defined(_M_IX86)
 
 #if defined(_M_X64)
+
 #include <pshpack1.h>
-struct HookJump {
+struct LongJump {
     BYTE        opPushR;
 
     WORD        opMovRim64;
@@ -118,17 +118,11 @@ struct HookJump {
 
     BYTE        opRet;
 };
-struct NearJump {
-    BYTE        opJmp;
-    DWORD       relAddr;
-};
 #include <poppack.h>
 
 static
-HookJump    sHookJump = { 0x50, 0xb848, 0, 0x24048748, 0xc3 };
-
-static
-BYTE        sOrigCode[sizeof(sHookJump)];
+const
+LongJump    sLongJump = { 0x50, 0xb848, 0, 0x24048748, 0xc3 };
 
 #endif // defined(_M_X64)
 
@@ -171,29 +165,7 @@ hookCRTNewAOP( const HMODULE hModule )
 
         if ( false == haveSpace )
         {
-#if defined(_M_IX86)
             assert(false);
-#endif // defined(_M_IX86)
-#if defined(_M_X64)
-            haveSpace = true;
-            {
-                const BYTE* p = reinterpret_cast<BYTE*>(hModule);
-                const BYTE* pAddr = &p[minOffset];
-                for ( size_t index = sizeof(NearJump); index < sizeof(HookJump); ++index )
-                {
-                    const BYTE  c = pAddr[index];
-                    if ( 0x90 == c || 0xcc == c )
-                    {
-                        continue;
-                    }
-
-                    // no space
-                    assert( false ); // todo: change method, hook-crtcpp
-                    haveSpace = false;
-                    break;
-                }
-            }
-#endif // defined(_M_X64)
         }
 
         if ( false == haveSpace )
@@ -202,18 +174,6 @@ hookCRTNewAOP( const HMODULE hModule )
         }
     }
 
-
-
-    {
-        assert( sizeof(size_t) == sizeof(void*) );
-
-#if defined(_M_IX86)
-        sHookJump.relAddr = (DWORD)(((DWORD64)my_new_array) - (DWORD64)((LPBYTE)hModule + minOffset + sizeof(sHookJump)));
-#endif // defined(_M_IX86)
-#if defined(_M_X64)
-        sHookJump.absAddr = ((size_t)my_new_array);
-#endif // defined(_M_X64)
-    }
 
     HANDLE hHeap = ::HeapCreate( 0, 0, 0 );
     if ( NULL != hHeap )
@@ -278,19 +238,181 @@ hookCRTNewAOP( const HMODULE hModule )
                 if ( 0 != sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray] )
                 {
                     BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray]);
-                    for ( size_t index = 0; index < sizeof(sHookJump); ++index )
+                    hookutil::Trampoline* pTrampoline = reinterpret_cast<hookutil::Trampoline*>((LPBYTE)sPageTrampoline + sizeof(hookutil::Trampoline)*0);
+                    BYTE* pOrigCode = pTrampoline->origCode;
+                    BYTE* pHookCode = pTrampoline->hookCode;
+
+                    size_t indexPatch = 0;
+                    size_t indexOrig = 0;
+                    size_t indexHook = 0;
+                    bool    lastInstJump = true;
+                    for ( indexOrig = 0; indexOrig < sizeof(HookJump); )
                     {
-                        sOrigCode[index] = pCode[index];
+                        const BYTE p = pCode[indexOrig];
+                        switch ( p )
+                        {
+                        case 0x51: // push ecx
+                        case 0x55: // push ebp
+                            pOrigCode[indexOrig] = p;
+                            pHookCode[indexHook] = p;
+                            indexOrig += 1;
+                            indexHook += 1;
+                            lastInstJump = false;
+                            break;
+                        case 0x5d: // pop ebp
+                            pOrigCode[indexOrig] = p;
+                            pHookCode[indexHook] = p;
+                            indexOrig += 1;
+                            indexHook += 1;
+                            lastInstJump = false;
+                            break;
+                        case 0x8b:
+                            if (
+                                (0xff == pCode[indexOrig+1]) // mov edi,edi
+                                || (0xec == pCode[indexOrig+1]) // mov ebp, esp
+                            )
+                            {
+                                pOrigCode[indexOrig+0] = p;
+                                pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                pHookCode[indexHook+0] = p;
+                                pHookCode[indexHook+1] = pCode[indexOrig+1];
+                                indexOrig += 2;
+                                indexHook += 2;
+                                lastInstJump = false;
+                            }
+                            else
+                            if (
+                                (0x45 == pCode[indexOrig+1]) // mov eax,[ebp+imm8]
+                            )
+                            {
+                                pOrigCode[indexOrig+0] = p;
+                                pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                pOrigCode[indexOrig+2] = pCode[indexOrig+2];
+                                pHookCode[indexHook+0] = p;
+                                pHookCode[indexHook+1] = pCode[indexOrig+1];
+                                pHookCode[indexHook+2] = pCode[indexOrig+2];
+                                indexOrig += 3;
+                                indexHook += 3;
+                                lastInstJump = false;
+                            }
+                            else
+                            {
+                                assert( false );
+                            }
+                            break;
+
+                        case 0xe9:
+                            {
+                                // jmp rel32
+                                pOrigCode[indexOrig+0] = p;
+                                pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                pOrigCode[indexOrig+2] = pCode[indexOrig+2];
+                                pOrigCode[indexOrig+3] = pCode[indexOrig+3];
+                                pOrigCode[indexOrig+4] = pCode[indexOrig+4];
+
+#if defined(_M_IX86)
+                                pHookCode[indexHook+0] = 0xe9;
+                                DWORD* pAddr = reinterpret_cast<DWORD*>(&pHookCode[indexHook+1]);
+                                const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+sizeof(HookJump)] + *((LONG*)&pCode[indexOrig+1]));
+                                const LPBYTE pAddrBase = reinterpret_cast<LPBYTE>(&pHookCode[indexHook+sizeof(HookJump)]);
+                                *pAddr = addr - pAddrBase;
+                                indexOrig += sizeof(HookJump);
+                                indexHook += sizeof(HookJump);
+#endif // defined(_M_IX86)
+#if defined(_M_X64)
+                                memcpy( &pHookCode[indexHook], &sLongJump, sizeof(sLongJump) );
+                                LongJump* pAddrJump = reinterpret_cast<LongJump*>(&pHookCode[indexHook]);
+                                const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexOrig+sizeof(HookJump)] + *((LONG*)&pCode[indexOrig+1]));
+                                pAddrJump->absAddr = reinterpret_cast<DWORD64>(addr);
+                                indexOrig += sizeof(HookJump);
+                                indexHook += sizeof(sLongJump);
+#endif // defined(_M_X64)
+
+                                if ( indexOrig == sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArrayLength] )
+                                {
+                                    indexPatch = indexOrig - sizeof(HookJump);
+                                }
+                            }
+                            break;
+                        default:
+                            assert( false );
+                            break;
+                        } // switch
                     }
-                    BYTE* pHookCode = reinterpret_cast<BYTE*>(&sHookJump);
-                    for ( size_t index = 0; index < sizeof(sHookJump); ++index )
+
                     {
-                        pCode[index] = pHookCode[index];
+                        if ( lastInstJump )
+                        {
+                        }
+                        else
+                        {
+#if defined(_M_IX86)
+                            pHookCode[indexHook] = sHookJump.opJmp;
+                            DWORD* pAddr = reinterpret_cast<DWORD*>(&pHookCode[indexHook+1]);
+                            const LPBYTE addr = reinterpret_cast<LPBYTE>(&pCode[indexPatch+0+sizeof(HookJump)]);
+                            const LPBYTE pAddrBase = reinterpret_cast<LPBYTE>(&pHookCode[indexHook+sizeof(HookJump)]);
+                            *pAddr = addr - pAddrBase;
+                            indexHook += sizeof(HookJump);
+#endif defined(_M_IX86)
+#if defined(_M_X64)
+                            memcpy( &pHookCode[indexHook], &sLongJump, sizeof(sLongJump) );
+                            LongJump* pAddrJump = reinterpret_cast<LongJump*>(&pHookCode[indexHook]);
+                            pAddrJump->absAddr = reinterpret_cast<DWORD64>(&pCode[indexOrig]);
+                            indexHook += sizeof(sLongJump);
+#endif // defined(_M_X64)
+                        }
+                    }
+
+
+                    {
+#if defined(_M_IX86)
+                        {
+                            pCode[indexPatch+0] = sHookJump.opJmp;
+                            DWORD* pAddr = reinterpret_cast<DWORD*>(&pCode[indexPatch+1]);
+                            const LPBYTE pAddrBase = reinterpret_cast<const LPBYTE>(&pCode[indexPatch+0+sizeof(HookJump)]);
+                            LPBYTE addr = reinterpret_cast<LPBYTE>(my_new_array);
+                            *pAddr = addr - pAddrBase;
+                        }
+#endif // defined(_M_IX86)
+
+#if defined(_M_X64)
+                        {
+                            {
+                                pCode[indexPatch+0] = sHookJump.opJmp;
+                                DWORD* pAddr = reinterpret_cast<DWORD*>(&pCode[indexPatch+1]);
+                                const LPBYTE pAddrBase = reinterpret_cast<const LPBYTE>(&pCode[indexPatch+0+sizeof(HookJump)]);
+                                const LPBYTE addr = reinterpret_cast<const LPBYTE>(pTrampoline->longJump);
+                                *pAddr = static_cast<DWORD>(addr - pAddrBase);
+                            }
+
+                            {
+                                memcpy( pTrampoline->longJump, &sLongJump, sizeof(sLongJump) );
+                                LongJump* pAddrJump = reinterpret_cast<LongJump*>(pTrampoline->longJump);
+
+                                LPBYTE addr = reinterpret_cast<LPBYTE>(my_new_array);
+                                pAddrJump->absAddr = reinterpret_cast<DWORD64>(addr);
+                            }
+                        }
+#endif // defined(_M_X64)
+                    }
+
+                    {
+                        for ( size_t index = indexPatch + sizeof(HookJump); index < indexOrig; ++index )
+                        {
+                            pCode[index] = 0x90;
+                        }
                     }
 
                     assert( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew] );
                     size_t* crtNew = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew]);
                     pfn_new = reinterpret_cast<PFN_new>(*crtNew);
+                    pfn_new_array = reinterpret_cast<PFN_new_array>(pHookCode);
+
+                    hookutil::TrampolineHeader* pHeader = &(pTrampoline->uh.header);
+                    pHeader->origSize = static_cast<WORD>(sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArrayLength]);
+                    pHeader->origCodeSize = static_cast<BYTE>(indexOrig);
+                    pHeader->hookCodeSize = static_cast<BYTE>(indexHook);
+
                 }
 
 
@@ -426,22 +548,24 @@ unhookCRTNewAOP( void )
                 }
             }
 
+
             {
                 assert( sizeof(size_t) == sizeof(void*) );
                 BYTE*   p = reinterpret_cast<BYTE*>(sModule);
 
                 if ( 0 != sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray] )
                 {
-                    if ( NULL != pfn_new )
+                    BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray]);
+                    hookutil::Trampoline* pTrampoline = reinterpret_cast<hookutil::Trampoline*>((LPBYTE)sPageTrampoline + sizeof(hookutil::Trampoline)*0/2);
+                    BYTE* pOrigCode = pTrampoline->origCode;
+                    BYTE* pHookCode = pTrampoline->hookCode;
+                    hookutil::TrampolineHeader* pHeader = &(pTrampoline->uh.header);
+
+                    for ( size_t index = 0; index < pHeader->origCodeSize; ++index )
                     {
-                        BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTStaticFunc[MemoryOperationMismatch::kIndexCRTStaticFuncNewArray]);
-                        for ( size_t index = 0; index < sizeof(sHookJump); ++index )
-                        {
-                            pCode[index] = sOrigCode[index];
-                        }
+                        pCode[index] = pOrigCode[index];
                     }
                 }
-
             }
 
 
