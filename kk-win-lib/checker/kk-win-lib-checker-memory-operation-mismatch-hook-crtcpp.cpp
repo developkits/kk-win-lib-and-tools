@@ -366,6 +366,43 @@ hookCRTCPP( const HMODULE hModule )
                                     assert( false );
                                 }
                                 break;
+                            case 0x89:
+                                if (
+                                    (0x89 == pCode[indexOrig+1])
+                                    || (0x8b == pCode[indexOrig+1])
+                                )
+                                {
+                                    if (
+                                        (0x4c == pCode[indexOrig+2])
+                                        && (0x24 == pCode[indexOrig+3])
+                                    )
+                                    {
+                                        // 89 4c 24: mov [rsp+imm8],rcx
+                                        // 8b 4c 24: mov rcx,[rsp+imm8]
+                                        pOrigCode[indexOrig+0] = p;
+                                        pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                        pOrigCode[indexOrig+2] = pCode[indexOrig+2];
+                                        pOrigCode[indexOrig+3] = pCode[indexOrig+3];
+                                        pOrigCode[indexOrig+4] = pCode[indexOrig+4];
+                                        pHookCode[indexHook+0] = p;
+                                        pHookCode[indexHook+1] = pCode[indexOrig+1];
+                                        pHookCode[indexHook+2] = pCode[indexOrig+2];
+                                        pHookCode[indexHook+3] = pCode[indexOrig+3];
+                                        pHookCode[indexHook+4] = pCode[indexOrig+4];
+                                        indexOrig += 5;
+                                        indexHook += 5;
+                                        lastInstJump = false;
+                                    }
+                                    else
+                                    {
+                                        assert( false );
+                                    }
+                                }
+                                else
+                                {
+                                    assert( false );
+                                }
+                                break;
                             case 0x8b:
                                 if ( 0xec == pCode[indexOrig+1] )
                                 {
