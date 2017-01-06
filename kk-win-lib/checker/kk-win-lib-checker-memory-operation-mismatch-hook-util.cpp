@@ -85,12 +85,13 @@ getPageSize(void)
 }
 
 bool
-deallocateTrampolinePage( LPVOID pTrampolinePage )
+trampolinePageDeallocate( LPVOID pTrampolinePage )
 {
     bool result = true;
 
     {
         const DWORD dwFreeType = MEM_RELEASE;
+
         const BOOL BRet = ::VirtualFree( pTrampolinePage, 0, dwFreeType );
         if ( !BRet )
         {
@@ -103,7 +104,7 @@ deallocateTrampolinePage( LPVOID pTrampolinePage )
 }
 
 LPVOID
-allocateTrampolinePage( LPVOID minAddr, LPVOID maxAddr )
+trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr )
 {
     LPVOID pTrampolinePage = NULL;
 

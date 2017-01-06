@@ -37,10 +37,10 @@ const DWORD
 getPageSize( void );
 
 LPVOID
-allocateTrampolinePage( LPVOID minAddr, LPVOID maxAddr );
+trampolinePageAllocate( LPVOID minAddr, LPVOID maxAddr );
 
 bool
-deallocateTrampolinePage( LPVOID pTrampolinePage );
+trampolinePageDeallocate( LPVOID pTrampolinePage );
 
 
 } // namespace hookutil
