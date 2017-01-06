@@ -46,6 +46,30 @@ bool
 trampolinePageDeallocate( LPVOID pTrampolinePage );
 
 
+#include <pshpack1.h>
+struct TrampolineHeader
+{
+    WORD    origSize;
+    BYTE    origCodeSize;
+    BYTE    hookCodeSize;
+};
+
+
+struct Trampoline
+{
+    union
+    {
+        BYTE                data[0x10];
+        TrampolineHeader    header;
+    } uh;
+    BYTE    origCode[0x10];
+    BYTE    hookCode[0x20];
+
+    BYTE    longJump[0x20];
+};
+#include <poppack.h>
+
+
 } // namespace hookutil
 
 } // namespace checker

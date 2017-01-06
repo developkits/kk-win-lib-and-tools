@@ -185,28 +185,6 @@ LongJump    sLongJump = { 0x50, 0xb848, 0, 0x24048748, 0xc3 };
 
 #endif // defined(_M_X64)
 
-#include <pshpack1.h>
-struct TrampolineHeader
-{
-    WORD    origSize;
-    BYTE    origCodeSize;
-    BYTE    hookCodeSize;
-};
-
-
-struct Trampoline
-{
-    union
-    {
-        BYTE                data[0x10];
-        TrampolineHeader    header;
-    } uh;
-    BYTE    origCode[0x10];
-    BYTE    hookCode[0x20];
-
-    BYTE    longJump[0x20];
-};
-#include <poppack.h>
 
 
 static
@@ -327,7 +305,7 @@ hookCRTCPP( const HMODULE hModule )
                     if ( 0 != sCRTStaticFunc[indexOperation+0] )
                     {
                         BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTStaticFunc[indexOperation+0]);
-                        Trampoline* pTrampoline = reinterpret_cast<Trampoline*>((LPBYTE)sPageTrampoline + sizeof(Trampoline)*indexOperation/2);
+                        hookutil::Trampoline* pTrampoline = reinterpret_cast<hookutil::Trampoline*>((LPBYTE)sPageTrampoline + sizeof(hookutil::Trampoline)*indexOperation/2);
                         BYTE* pOrigCode = pTrampoline->origCode;
                         BYTE* pHookCode = pTrampoline->hookCode;
 
@@ -614,7 +592,7 @@ hookCRTCPP( const HMODULE hModule )
                             break;
                         }
 
-                        TrampolineHeader* pHeader = &(pTrampoline->uh.header);
+                        hookutil::TrampolineHeader* pHeader = &(pTrampoline->uh.header);
                         pHeader->origSize = static_cast<WORD>(sCRTStaticFunc[indexOperation+1]);
                         pHeader->origCodeSize = static_cast<BYTE>(indexOrig);
                         pHeader->hookCodeSize = static_cast<BYTE>(indexHook);
@@ -764,10 +742,10 @@ unhookCRTCPP( void )
                     if ( 0 != sCRTStaticFunc[indexOperation+0] )
                     {
                         BYTE* pCode = reinterpret_cast<BYTE*>(p + sCRTStaticFunc[indexOperation+0]);
-                        Trampoline* pTrampoline = reinterpret_cast<Trampoline*>((LPBYTE)sPageTrampoline + sizeof(Trampoline)*indexOperation/2);
+                        hookutil::Trampoline* pTrampoline = reinterpret_cast<hookutil::Trampoline*>((LPBYTE)sPageTrampoline + sizeof(hookutil::Trampoline)*indexOperation/2);
                         BYTE* pOrigCode = pTrampoline->origCode;
                         BYTE* pHookCode = pTrampoline->hookCode;
-                        TrampolineHeader* pHeader = &(pTrampoline->uh.header);
+                        hookutil::TrampolineHeader* pHeader = &(pTrampoline->uh.header);
 
                         for ( size_t index = 0; index < pHeader->origCodeSize; ++index )
                         {

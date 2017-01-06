@@ -84,6 +84,11 @@ my_new_array( size_t size )
 }
 
 
+
+static
+LPVOID      sPageTrampoline  = NULL;
+
+
 #if defined(_M_IX86)
 
 #include <pshpack1.h>
@@ -139,6 +144,13 @@ hookCRTNewAOP( const HMODULE hModule )
     }
 
     const DWORD64   pageSize = hookutil::getPageSize();
+
+    sPageTrampoline = hookutil::trampolinePageAllocate( hModule, hModule );
+
+    if ( NULL == sPageTrampoline )
+    {
+        return false;
+    }
 
     DWORD64     minOffset = -1;
     DWORD64     maxOffset = 0;
@@ -334,6 +346,7 @@ hookCRTNewAOP( const HMODULE hModule )
         }
     }
 
+    hookutil::tranpolinePageDropWriteOperation( sPageTrampoline, (const DWORD)pageSize );
 
     return true;
 }
@@ -485,6 +498,8 @@ unhookCRTNewAOP( void )
 
     pfn_new_array = NULL;
 
+    hookutil::trampolinePageDeallocate( sPageTrampoline );
+    sPageTrampoline = NULL;
 
     return true;
 }
