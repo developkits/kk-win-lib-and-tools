@@ -220,34 +220,7 @@ hookCRTCPP( const HMODULE hModule )
 
     const DWORD64   pageSize = hookutil::getPageSize();
 
-    {
-        const DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE;
-        const DWORD flProtect = PAGE_READWRITE;
-        // todo: x64 limit -2G to +2G
-        {
-            for ( DWORD64 pAddr = reinterpret_cast<DWORD64>(hModule) - pageSize; pageSize < pAddr; pAddr -= pageSize )
-            {
-                LPVOID p = ::VirtualAlloc( (LPVOID)pAddr, (size_t)pageSize, flAllocationType, flProtect );
-                if ( NULL != p )
-                {
-                    sPageTrampoline = p;
-                    break;
-                }
-            }
-        }
-        if ( NULL == sPageTrampoline )
-        {
-            for ( DWORD64 pAddr = reinterpret_cast<DWORD64>(hModule) + pageSize*16; pAddr < (-1)-pageSize; pAddr += pageSize )
-            {
-                LPVOID p = ::VirtualAlloc( (LPVOID)pAddr, (size_t)pageSize, flAllocationType, flProtect );
-                if ( NULL != p )
-                {
-                    sPageTrampoline = p;
-                    break;
-                }
-            }
-        }
-    }
+    sPageTrampoline = hookutil::trampolinePageAllocate( hModule, hModule );
 
     if ( NULL == sPageTrampoline )
     {
@@ -700,10 +673,7 @@ hookCRTCPP( const HMODULE hModule )
         }
     }
 
-    {
-        DWORD dwProtect = 0;
-        const BOOL BRet = ::VirtualProtect( (LPVOID)sPageTrampoline, (size_t)pageSize, PAGE_EXECUTE_READ, &dwProtect );
-    }
+    hookutil::tranpolinePageDropWriteOperation( sPageTrampoline, (const DWORD)pageSize );
 
     return true;
 }
@@ -865,17 +835,8 @@ unhookCRTCPP( void )
     pfn_delete_size = NULL;
     pfn_delete_array_size = NULL;
 
-    {
-        const DWORD dwFreeType = MEM_RELEASE;
-        const BOOL BRet = ::VirtualFree( sPageTrampoline, 0, dwFreeType );
-        if ( !BRet )
-        {
-            const DWORD dwErr = ::GetLastError();
-        }
-
-        sPageTrampoline = NULL;
-    }
-
+    hookutil::trampolinePageDeallocate( sPageTrampoline );
+    sPageTrampoline = NULL;
 
     return true;
 }
