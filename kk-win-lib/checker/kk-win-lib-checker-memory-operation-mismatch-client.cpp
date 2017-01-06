@@ -194,6 +194,15 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
         result = bRet;
     }
 
+    {
+        const HANDLE hProcess = ::GetCurrentProcess();
+        const BOOL BRet = ::FlushInstructionCache( hProcess, NULL, 0 );
+        if ( !BRet )
+        {
+            const DWORD dwErr = ::GetLastError();
+        }
+    }
+
     return result;
 }
 
