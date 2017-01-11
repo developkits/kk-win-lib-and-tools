@@ -1322,8 +1322,7 @@ DebugSymbol::getCRTNewArrayRVA( DebugSymbol::FuncInfo* funcInfo ) const
         if ( !bRet )
         {
             result = false;
-            funcInfo->dwAddr = 0;
-            funcInfo->size = 0;
+            ZeroMemory( funcInfo, sizeof(funcInfo) );
         }
     }
 
