@@ -31,7 +31,7 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="xcopy ..\..\..\bin\kk-win-tools\kk-win-checker-memory-operation-mismatch\$(PlatformName)\$(ConfigurationName)\*.dll $(TargetDir) /I /Y "
+				CommandLine="xcopy ..\..\..\bin\kk-win-tools\kk-win-checker-memory-operation-mismatch\$(PlatformName)\$(ConfigurationName)\*.dll $(TargetDir) /I /Y&#x0D;&#x0A;"
 				Outputs="kk-win-checker-memory-operation-mismatch-dll.dll"
 			/>
 			<Tool
@@ -51,6 +51,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
+				AssemblerOutput="2"
 				WarningLevel="3"
 				DebugInformationFormat="4"
 			/>
@@ -107,7 +108,7 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="xcopy ..\..\..\bin\kk-win-tools\kk-win-checker-memory-operation-mismatch\$(PlatformName)\$(ConfigurationName)\*.dll $(TargetDir) /I /Y "
+				CommandLine="xcopy ..\..\..\bin\kk-win-tools\kk-win-checker-memory-operation-mismatch\$(PlatformName)\$(ConfigurationName)\*.dll $(TargetDir) /I /Y&#x0D;&#x0A;"
 				Outputs="kk-win-checker-memory-operation-mismatch-dll.dll"
 			/>
 			<Tool
@@ -128,6 +129,7 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
+				AssemblerOutput="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -185,7 +187,7 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="xcopy ..\..\..\bin\kk-win-tools\kk-win-checker-memory-operation-mismatch\$(PlatformName)\$(ConfigurationName)\*.dll $(TargetDir) /I /Y "
+				CommandLine="xcopy ..\..\..\bin\kk-win-tools\kk-win-checker-memory-operation-mismatch\$(PlatformName)\$(ConfigurationName)\*.dll $(TargetDir) /I /Y&#x0D;&#x0A;"
 				Outputs="kk-win-checker-memory-operation-mismatch-dll.dll"
 			/>
 			<Tool
@@ -205,6 +207,7 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
+				AssemblerOutput="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
@@ -264,7 +267,7 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="xcopy ..\..\..\bin\kk-win-tools\kk-win-checker-memory-operation-mismatch\$(PlatformName)\$(ConfigurationName)\*.dll $(TargetDir) /I /Y "
+				CommandLine="xcopy ..\..\..\bin\kk-win-tools\kk-win-checker-memory-operation-mismatch\$(PlatformName)\$(ConfigurationName)\*.dll $(TargetDir) /I /Y&#x0D;&#x0A;"
 				Outputs="kk-win-checker-memory-operation-mismatch-dll.dll"
 			/>
 			<Tool
@@ -285,6 +288,7 @@
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="0"
+				AssemblerOutput="2"
 				WarningLevel="3"
 				DebugInformationFormat="3"
 			/>
