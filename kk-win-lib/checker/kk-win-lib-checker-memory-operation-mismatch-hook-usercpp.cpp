@@ -357,6 +357,31 @@ hookUserCPP( const HMODULE hModule )
                                 indexHook += 2;
                                 lastInstJump = false;
                                 break;
+                            case 0x81:
+                                if ( 0xec == pCode[indexOrig+1] )
+                                {
+                                    // sub esp, imm32
+                                    pOrigCode[indexOrig+0] = p;
+                                    pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                    pOrigCode[indexOrig+2] = pCode[indexOrig+2];
+                                    pOrigCode[indexOrig+3] = pCode[indexOrig+3];
+                                    pOrigCode[indexOrig+4] = pCode[indexOrig+4];
+                                    pOrigCode[indexOrig+5] = pCode[indexOrig+5];
+                                    pHookCode[indexHook+0] = p;
+                                    pHookCode[indexHook+1] = pCode[indexOrig+1];
+                                    pHookCode[indexHook+2] = pCode[indexOrig+2];
+                                    pHookCode[indexHook+3] = pCode[indexOrig+3];
+                                    pHookCode[indexHook+4] = pCode[indexOrig+4];
+                                    pHookCode[indexHook+5] = pCode[indexOrig+5];
+                                    indexOrig += 6;
+                                    indexHook += 6;
+                                    lastInstJump = false;
+                                }
+                                else
+                                {
+                                    assert( false );
+                                }
+                                break;
                             case 0x83:
                                 if ( 0xec == pCode[indexOrig+1] )
                                 {
