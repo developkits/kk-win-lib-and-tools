@@ -146,11 +146,29 @@ struct dataCRTStaticFunc
     DWORD64     dwCRTStaticDeleteArraySizeLength;
 };
 
+struct dataUserStaticFunc
+{
+    DWORD64     dwUserStaticNew;
+    DWORD64     dwUserStaticNewLength;
+    DWORD64     dwUserStaticDelete;
+    DWORD64     dwUserStaticDeleteLength;
+    DWORD64     dwUserStaticNewArray;
+    DWORD64     dwUserStaticNewArrayLength;
+    DWORD64     dwUserStaticDeleteArray;
+    DWORD64     dwUserStaticDeleteArrayLength;
+
+    DWORD64     dwUserStaticDeleteSize;
+    DWORD64     dwUserStaticDeleteSizeLength;
+    DWORD64     dwUserStaticDeleteArraySize;
+    DWORD64     dwUserStaticDeleteArraySizeLength;
+};
+
 struct packetCRTModule
 {
     packetHeader    header;
     dataCRTModule   data;
     dataCRTStaticFunc   func;
+    dataUserStaticFunc  user;
 };
 
 struct dataMemoryOperation

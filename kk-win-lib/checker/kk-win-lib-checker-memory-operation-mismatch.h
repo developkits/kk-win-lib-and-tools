@@ -82,6 +82,14 @@ public:
         , kOperationCRTStaticDeleteSize = 0x60+4
         , kOperationCRTStaticDeleteArraySize = 0x60+5
 
+        , kOperationUserStaticNew = 0x80+0
+        , kOperationUserStaticDelete = 0x80+1
+        , kOperationUserStaticNewArray = 0x80+2
+        , kOperationUserStaticDeleteArray = 0x80+3
+
+        , kOperationUserStaticDeleteSize = 0x80+4
+        , kOperationUserStaticDeleteArraySize = 0x80+5
+
     };
 
 
@@ -128,6 +136,26 @@ public:
         , kIndexCRTStaticFuncDeleteArraySizeLength = 11
 
         , kIndexCRTStaticFuncMAX = 12
+    };
+
+    enum enumIndexUserStaticFunc
+    {
+        kIndexUserStaticFuncNew = 0
+        , kIndexUserStaticFuncNewLength = 1
+        , kIndexUserStaticFuncDelete = 2
+        , kIndexUserStaticFuncDeleteLength = 3
+        , kIndexUserStaticFuncNewArray = 4
+        , kIndexUserStaticFuncNewArrayLength = 5
+        , kIndexUserStaticFuncDeleteArray = 6
+        , kIndexUserStaticFuncDeleteArrayLength = 7
+
+        // since C++14
+        , kIndexUserStaticFuncDeleteSize = 8
+        , kIndexUserStaticFuncDeleteSizeLength = 9
+        , kIndexUserStaticFuncDeleteArraySize = 10
+        , kIndexUserStaticFuncDeleteArraySizeLength = 11
+
+        , kIndexUserStaticFuncMAX = 12
     };
 
 protected:

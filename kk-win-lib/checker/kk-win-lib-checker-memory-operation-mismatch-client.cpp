@@ -33,6 +33,7 @@
 #include "kk-win-lib-checker-memory-operation-mismatch-hook-iat.h"
 #include "kk-win-lib-checker-memory-operation-mismatch-hook-crtnewaop.h"
 #include "kk-win-lib-checker-memory-operation-mismatch-hook-crtcpp.h"
+#include "kk-win-lib-checker-memory-operation-mismatch-hook-usercpp.h"
 
 
 #include "kk-win-lib-checker-memory-operation-mismatch-internal.h"
@@ -50,10 +51,12 @@ MemoryOperationMismatchClient::MemoryOperationMismatchClient()
 {
     ZeroMemory( mCRTOffsetIAT, sizeof(mCRTOffsetIAT) );
     ZeroMemory( mCRTStaticFunc, sizeof(mCRTStaticFunc) );
+    ZeroMemory( mUserStaticFunc, sizeof(mUserStaticFunc) );
     mCRTisStaticLinked = false;
     mUseHookIAT = true;
     mUseHookCRTNewArray = true;
     mUseHookCRTCPP = true;
+    mUseHookUserCPP = true;
 }
 
 MemoryOperationMismatchClient::~MemoryOperationMismatchClient()
@@ -68,6 +71,10 @@ MemoryOperationMismatchClient::term(void)
 
     result = MemoryOperationMismatch::term();
 
+    if ( mUseHookUserCPP )
+    {
+        const bool bRet = unhookMemoryOperationMismatchUserCPP();
+    }
     if ( mUseHookCRTCPP && mCRTisStaticLinked )
     {
         const bool bRet = unhookMemoryOperationMismatchCRTCPP();
@@ -84,10 +91,12 @@ MemoryOperationMismatchClient::term(void)
 
     ZeroMemory( mCRTOffsetIAT, sizeof(mCRTOffsetIAT) );
     ZeroMemory( mCRTStaticFunc, sizeof(mCRTStaticFunc) );
+    ZeroMemory( mUserStaticFunc, sizeof(mUserStaticFunc) );
     mCRTisStaticLinked = false;
     mUseHookIAT = true;
     mUseHookCRTNewArray = true;
     mUseHookCRTCPP = true;
+    mUseHookUserCPP = true;
 
     return result;
 }
@@ -166,7 +175,30 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
             mCRTStaticFunc[kIndexCRTStaticFuncDeleteArraySizeLength]    = module.func.dwCRTStaticDeleteArraySizeLength;
 
             mCRTisStaticLinked = module.data.moduleInfo.info.isCRTStaticLinked;
+
+            mUserStaticFunc[kIndexUserStaticFuncNew]                  = module.user.dwUserStaticNew;
+            mUserStaticFunc[kIndexUserStaticFuncNewLength]            = module.user.dwUserStaticNewLength;
+            mUserStaticFunc[kIndexUserStaticFuncDelete]               = module.user.dwUserStaticDelete;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteLength]         = module.user.dwUserStaticDeleteLength;
+            mUserStaticFunc[kIndexUserStaticFuncNewArray]             = module.user.dwUserStaticNewArray;
+            mUserStaticFunc[kIndexUserStaticFuncNewArrayLength]       = module.user.dwUserStaticNewArrayLength;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArray]          = module.user.dwUserStaticDeleteArray;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArrayLength]    = module.user.dwUserStaticDeleteArrayLength;
+
+            mUserStaticFunc[kIndexUserStaticFuncDeleteSize]               = module.user.dwUserStaticDeleteSize;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteSizeLength]         = module.user.dwUserStaticDeleteSizeLength;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArraySize]          = module.user.dwUserStaticDeleteArraySize;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArraySizeLength]    = module.user.dwUserStaticDeleteArraySizeLength;
+
         }
+    }
+
+
+    if ( mUseHookUserCPP )
+    {
+        const HMODULE hModule = ::GetModuleHandleA( NULL );
+        const bool bRet = hookMemoryOperationMismatchUserCPP( hModule, this );
+        result = bRet;
     }
 
     if ( mCRTisStaticLinked )
@@ -287,6 +319,19 @@ MemoryOperationMismatchClient::getCRTisStaticLinked( void ) const
     return mCRTisStaticLinked;
 }
 
+bool
+MemoryOperationMismatchClient::getUserStaticFunc(
+    DWORD64 UserStaticFunc[MemoryOperationMismatch::kIndexUserStaticFuncMAX]
+) const
+{
+    for ( size_t index = 0; index < kIndexUserStaticFuncMAX; ++index )
+    {
+        UserStaticFunc[index] = this->mUserStaticFunc[index];
+    }
+
+    return true;
+}
+
 
 bool
 MemoryOperationMismatchClient::disableHookIAT( const bool disableHook )
@@ -339,6 +384,22 @@ MemoryOperationMismatchClient::disableHookCRTCPP( const bool disableHook )
     return oldValue;
 }
 
+bool
+MemoryOperationMismatchClient::disableHookUserCPP( const bool disableHook )
+{
+    const bool oldValue = mUseHookUserCPP;
+
+    if ( disableHook )
+    {
+        mUseHookUserCPP = false;
+    }
+    else
+    {
+        mUseHookUserCPP = true;
+    }
+
+    return oldValue;
+}
 
 } // namespace checker
 

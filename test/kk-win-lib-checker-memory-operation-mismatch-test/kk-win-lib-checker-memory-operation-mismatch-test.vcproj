@@ -506,6 +506,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-usercpp.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-usercpp.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\kk-win-lib\checker\kk-win-lib-checker-memory-operation-mismatch-hook-util.cpp"
 					>
 				</File>
