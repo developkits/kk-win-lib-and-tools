@@ -53,6 +53,7 @@ MemoryOperationMismatchClient::MemoryOperationMismatchClient()
     mCRTisStaticLinked = false;
     mUseHookIAT = true;
     mUseHookCRTNewArray = true;
+    mUseHookCRTCPP = true;
 }
 
 MemoryOperationMismatchClient::~MemoryOperationMismatchClient()
