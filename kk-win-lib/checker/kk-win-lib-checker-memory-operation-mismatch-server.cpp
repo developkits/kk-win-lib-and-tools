@@ -1723,26 +1723,34 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() != it )
                             {
-                                std::stack<enumMemoryOperation>    chain;
-                                chain.push( it->second );
-                                chain.push( (enumMemoryOperation)memory.funcMemoryOperation );
-                                pairRecordUser  pair(memory.pointer, chain);
-                                std::pair<mapRecordUser::iterator,bool> ret = mapMemoryUser.insert( pair );
-                                if ( false == ret.second )
+                                mapRecordUser::iterator itUser = mapMemoryUser.find( memory.pointer );
+                                if ( mapMemoryUser.end() != itUser )
                                 {
-                                    // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
+                                    itUser->second.push( (enumMemoryOperation)memory.funcMemoryOperation );
+                                }
+                                else
+                                {
+                                    std::stack<enumMemoryOperation>    chain;
+                                    chain.push( it->second );
+                                    chain.push( (enumMemoryOperation)memory.funcMemoryOperation );
+                                    pairRecordUser  pair(memory.pointer, chain);
+                                    std::pair<mapRecordUser::iterator,bool> ret = mapMemoryUser.insert( pair );
+                                    if ( false == ret.second )
                                     {
-                                        action.data.action = kActionBreak;
+                                        // error
+                                        action.header.size = sizeof(action);
+                                        action.header.mode = kModeAction;
+                                        if ( pThis->mDoBreak )
+                                        {
+                                            action.data.action = kActionBreak;
+                                        }
+                                        else
+                                        {
+                                            action.data.action = kActionNone;
+                                        }
+                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        negative = true;
                                     }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
-                                    negative = true;
                                 }
                             }
                             else
