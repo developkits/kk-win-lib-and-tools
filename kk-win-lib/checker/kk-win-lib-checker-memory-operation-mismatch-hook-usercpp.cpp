@@ -538,6 +538,14 @@ hookUserCPP( const HMODULE hModule )
                                     }
                                 }
                                 break;
+                            case 0xcc:
+                                // int 3
+                                {
+                                    char temp[128];
+                                    ::wsprintfA( temp, "hook-usercpp: Detect Breakpoint of Debugger. operation=%u\n", indexOperation );
+                                    ::OutputDebugStringA( temp );
+                                }
+                                break;
                             case 0xff:
                                 if ( 0x75 == pCode[indexOrig+1] )
                                 {

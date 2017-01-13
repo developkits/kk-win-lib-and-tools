@@ -384,6 +384,14 @@ hookCRTNewAOP( const HMODULE hModule )
                                 }
                             }
                             break;
+                        case 0xcc:
+                            // int 3
+                            {
+                                char temp[128];
+                                ::wsprintfA( temp, "hook-crtnewaop: Detect Breakpoint of Debugger.\n" );
+                                ::OutputDebugStringA( temp );
+                            }
+                            break;
                         default:
                             assert( false );
                             break;
