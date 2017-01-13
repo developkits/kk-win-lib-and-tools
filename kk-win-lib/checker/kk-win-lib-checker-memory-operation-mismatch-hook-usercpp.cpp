@@ -332,16 +332,28 @@ hookUserCPP( const HMODULE hModule )
 
                             switch ( p )
                             {
+                            case 0x50: // push eax
+                            case 0x51: // push ecx
+                            case 0x52: // push edx
                             case 0x53: // push rbx
+                            case 0x54: // push esp
                             case 0x55: // push ebp
                             case 0x56: // push esi
+                            case 0x57: // push edi
                                 pOrigCode[indexOrig] = p;
                                 pHookCode[indexHook] = p;
                                 indexOrig += 1;
                                 indexHook += 1;
                                 lastInstJump = false;
                                 break;
+                            case 0x58: // pop eax
+                            case 0x59: // pop ecx
+                            case 0x5a: // pop edx
+                            case 0x5b: // pop ebx
+                            case 0x5c: // pop esp
                             case 0x5d: // pop ebp
+                            case 0x5e: // pop esi
+                            case 0x5f: // pop edi
                                 pOrigCode[indexOrig] = p;
                                 pHookCode[indexHook] = p;
                                 indexOrig += 1;
@@ -558,6 +570,26 @@ hookUserCPP( const HMODULE hModule )
                                     pHookCode[indexHook+2] = pCode[indexOrig+2];
                                     indexOrig += 3;
                                     indexHook += 3;
+                                    lastInstJump = false;
+                                }
+                                else
+                                if ( 0x15 == pCode[indexOrig+1] )
+                                {
+                                    // call imm32
+                                    pOrigCode[indexOrig+0] = p;
+                                    pOrigCode[indexOrig+1] = pCode[indexOrig+1];
+                                    pOrigCode[indexOrig+2] = pCode[indexOrig+2];
+                                    pOrigCode[indexOrig+3] = pCode[indexOrig+3];
+                                    pOrigCode[indexOrig+4] = pCode[indexOrig+4];
+                                    pOrigCode[indexOrig+5] = pCode[indexOrig+5];
+                                    pHookCode[indexHook+0] = p;
+                                    pHookCode[indexHook+1] = pCode[indexOrig+1];
+                                    pHookCode[indexHook+2] = pCode[indexOrig+2];
+                                    pHookCode[indexHook+3] = pCode[indexOrig+3];
+                                    pHookCode[indexHook+4] = pCode[indexOrig+3];
+                                    pHookCode[indexHook+5] = pCode[indexOrig+4];
+                                    indexOrig += 6;
+                                    indexHook += 6;
                                     lastInstJump = false;
                                 }
                                 else
