@@ -209,6 +209,11 @@ int main(int argc, char* argv[])
         printf( "argv[1]: injection-dll\n" );
         printf( "argv[2]: launch-exe\n" );
         printf( "argv[3..]: launch-exe's arg\n" );
+        printf( " or\n" );
+        printf( "argv[1]: --wait-finish\n" );
+        printf( "argv[2]: injection-dll\n" );
+        printf( "argv[3]: launch-exe\n" );
+        printf( "argv[4..]: launch-exe's arg\n" );
         return 1;
     }
 
@@ -223,21 +228,33 @@ int main(int argc, char* argv[])
         }
     }
 
+    bool    needWaitFinish = false;
+    size_t  indexArg = 1;
+    {
+        if ( 0 == ::_stricmp( argv[indexArg], "--wait-finish" ) )
+        {
+            needWaitFinish = true;
+            indexArg += 1;
+        }
+    }
+
     char    szDllPath[_MAX_PATH*2];
     {
-        const bool bRet = searchFile( szDllPath, sizeof(szDllPath), argv[1] );
+        const bool bRet = searchFile( szDllPath, sizeof(szDllPath), argv[indexArg] );
         if( !bRet )
         {
-            printf( " dll not found '%s'\n", argv[1] );
+            printf( " dll not found '%s'\n", argv[indexArg] );
             return 2;
         }
+
+        indexArg += 1;
     }
 
     char    szCmd[64*1024];
     szCmd[0] = '\0';
     // avoid security risk. see ref CreateProcess
     {
-        const char* pArg = argv[2];
+        const char* pArg = argv[indexArg];
         if ( NULL == pArg )
         {
             return 1;
@@ -253,9 +270,11 @@ int main(int argc, char* argv[])
         {
             ::lstrcpyA( szCmd, pArg );
         }
+
+        indexArg += 1;
     }
 
-    for ( size_t index = 3; index < (size_t)argc; ++index )
+    for ( size_t index = indexArg; index < (size_t)argc; ++index )
     {
         const char* pArg = argv[index];
         if ( NULL == pArg )
@@ -294,6 +313,37 @@ int main(int argc, char* argv[])
     if ( NULL != hThread )
     {
         ::ResumeThread( hThread );
+    }
+
+    if ( needWaitFinish )
+    {
+        bool isFinished = false;
+        while( false == isFinished )
+        {
+            const DWORD dwRet = ::WaitForSingleObject( hProcess, 5*1000 );
+            if ( WAIT_TIMEOUT == dwRet )
+            {
+                continue;
+            }
+
+            if ( WAIT_OBJECT_0 == dwRet )
+            {
+                isFinished = true;
+                break;
+            }
+
+            if ( WAIT_ABANDONED == dwRet )
+            {
+                assert( false );
+                break;
+            }
+
+            if ( WAIT_FAILED == dwRet )
+            {
+                const DWORD dwErr = ::GetLastError();
+                break;
+            }
+        }
     }
 
     if ( NULL != hThread )
