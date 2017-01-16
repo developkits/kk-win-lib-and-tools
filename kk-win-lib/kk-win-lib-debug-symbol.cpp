@@ -554,6 +554,8 @@ enum enumDataType
     , kDataTypeVoid = 1
     , kDataTypeVoidPointer = 2
     , kDataTypeUInt = 3
+    , kDataTypeUDT = 4
+    , kDataTypeUDTPointer = 5
 };
 
 static
@@ -670,6 +672,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
         DWORD           dwCallConversion = 0;
         enumDataType    enmTypeArg0 = kDataTypeNone;
         enumDataType    enmTypeArg1 = kDataTypeNone;
+        DWORD           dwTypeIndexArg1 = 0;
         bool            isArgSingle = true;
         bool            isArgDouble = true;
 
@@ -911,6 +914,20 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                                     break;
                                 }
                             }
+                            else
+                            if ( SymTagUDT == dwSymTag )
+                            {
+                                if ( 0 == index )
+                                {
+                                    enmTypeArg0 = kDataTypeUDTPointer;
+                                }
+                                else
+                                if ( 1 == index )
+                                {
+                                    enmTypeArg1 = kDataTypeUDTPointer;
+                                    dwTypeIndexArg1 = dwTypeIndexPointer;
+                                }
+                            }
 
                         }
                         else
@@ -983,8 +1000,110 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
 #if 1
             if ( isArgSingle || isArgDouble )
             {
+                const char*     strFuncReturn = "";
+                switch ( enmTypeReturn )
+                {
+                case kDataTypeVoid:
+                    strFuncReturn = "void";
+                    break;
+                case kDataTypeVoidPointer:
+                    strFuncReturn = "void*";
+                    break;
+                case kDataTypeNone:
+                case kDataTypeUInt:
+                    break;
+                default:
+                    break;
+                }
+
+                const char*     strFuncArg0 = "";
+                switch ( enmTypeArg0 )
+                {
+                case kDataTypeVoid:
+                    strFuncArg0 = "void";
+                    break;
+                case kDataTypeVoidPointer:
+                    strFuncArg0 = "void*";
+                    break;
+                case kDataTypeUInt:
+                    strFuncArg0 = "size_t";
+                    break;
+                case kDataTypeNone:
+                    break;
+                default:
+                    break;
+                }
+
+                const char*     strFuncArg1 = "";
+                switch ( enmTypeArg1 )
+                {
+                case kDataTypeVoid:
+                    strFuncArg1 = "void";
+                    break;
+                case kDataTypeVoidPointer:
+                    strFuncArg1 = "void*";
+                    break;
+                case kDataTypeUInt:
+                    strFuncArg1 = "size_t";
+                    break;
+                case kDataTypeUDTPointer:
+                    strFuncArg1 = "";
+                case kDataTypeNone:
+                    break;
+                default:
+                    break;
+                }
+
                 char    buff[1024];
-                ::wsprintfA( buff, "%p %08x %4u %4u %s\n", (void *)pSymInfo->Address, pSymInfo->Index, pSymInfo->Tag, pSymInfo->Index, pSymInfo->Name );
+                buff[0] = '\0';
+                if ( isArgSingle )
+                {
+                    ::wsprintfA( buff, "%p %08x %4u %4u %s ::%s(%s)\n"
+                        , (void *)pSymInfo->Address, pSymInfo->Index, pSymInfo->Tag, pSymInfo->Index
+                        , strFuncReturn
+                        , pSymInfo->Name
+                        , strFuncArg0
+                        );
+                }
+                if ( isArgDouble )
+                {
+                    if ( kDataTypeUDTPointer == enmTypeArg1 )
+                    {
+                        wchar_t*    pStrArg1 = NULL;
+                        {
+                            const BOOL BRet = pThis->mSymGetTypeInfo( hProcess, dwModuleBase, dwTypeIndexArg1, TI_GET_SYMNAME, &pStrArg1 );
+                            if ( !BRet )
+                            {
+                                const DWORD dwErr = ::GetLastError();
+                            }
+                        }
+
+                        ::wsprintfA( buff, "%p %08x %4u %4u %s ::%s(%s,%S*)\n"
+                            , (void *)pSymInfo->Address, pSymInfo->Index, pSymInfo->Tag, pSymInfo->Index
+                            , strFuncReturn
+                            , pSymInfo->Name
+                            , strFuncArg0
+                            , pStrArg1
+                            );
+
+                        if ( NULL != pStrArg1 )
+                        {
+                            const HLOCAL pResult = ::LocalFree( pStrArg1 );
+                            assert( NULL == pResult );
+                        }
+
+                    }
+                    else
+                    {
+                        ::wsprintfA( buff, "%p %08x %4u %4u %s ::%s(%s,%s)\n"
+                            , (void *)pSymInfo->Address, pSymInfo->Index, pSymInfo->Tag, pSymInfo->Index
+                            , strFuncReturn
+                            , pSymInfo->Name
+                            , strFuncArg0
+                            , strFuncArg1
+                            );
+                    }
+                }
                 ::OutputDebugStringA( buff );
             }
 #endif
