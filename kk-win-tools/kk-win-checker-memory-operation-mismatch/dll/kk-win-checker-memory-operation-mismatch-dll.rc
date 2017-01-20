@@ -27,8 +27,8 @@ LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,4,1,0
- PRODUCTVERSION 0,4,1,0
+ FILEVERSION 0,5,0,0
+ PRODUCTVERSION 0,5,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -44,12 +44,12 @@ BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "FileDescription", "kk-win-checker-memory-operation-mismatch-dll"
-            VALUE "FileVersion", "0, 4, 1, 0"
+            VALUE "FileVersion", "0, 5, 0, 0"
             VALUE "InternalName", "kk-win-checker-memory-operation-mismatch-dll"
             VALUE "LegalCopyright", "Copyright (C) Kiyofumi Kondoh"
             VALUE "OriginalFilename", "kk-win-checker-memory-operation-mismatch-dll.dll"
             VALUE "ProductName", "kk-win-checker-memory-operation-mismatch-dll"
-            VALUE "ProductVersion", "0, 4, 1, 0"
+            VALUE "ProductVersion", "0, 5, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
