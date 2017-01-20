@@ -161,6 +161,24 @@ struct dataUserStaticFunc
     DWORD64     dwUserStaticDeleteSizeLength;
     DWORD64     dwUserStaticDeleteArraySize;
     DWORD64     dwUserStaticDeleteArraySizeLength;
+
+    DWORD64     dwUserStaticNewArg3;
+    DWORD64     dwUserStaticNewArg3Length;
+    DWORD64     dwUserStaticDeleteArg3;
+    DWORD64     dwUserStaticDeleteArg3Length;
+    DWORD64     dwUserStaticNewArrayArg3;
+    DWORD64     dwUserStaticNewArrayArg3Length;
+    DWORD64     dwUserStaticDeleteArrayArg3;
+    DWORD64     dwUserStaticDeleteArrayArg3Length;
+    DWORD64     dwUserStaticNewArg4;
+    DWORD64     dwUserStaticNewArg4Length;
+    DWORD64     dwUserStaticDeleteArg4;
+    DWORD64     dwUserStaticDeleteArg4Length;
+    DWORD64     dwUserStaticNewArrayArg4;
+    DWORD64     dwUserStaticNewArrayArg4Length;
+    DWORD64     dwUserStaticDeleteArrayArg4;
+    DWORD64     dwUserStaticDeleteArrayArg4Length;
+
 };
 
 struct packetCRTModule

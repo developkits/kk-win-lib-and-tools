@@ -150,6 +150,129 @@ my_delete_array_size( void* p, size_t size )
 }
 
 
+typedef void* (*PFN_new_arg3)(size_t size,const char* fn,size_t line);
+static
+PFN_new_arg3            pfn_new_arg3 = NULL;
+
+typedef void* (*PFN_new_array_arg3)(size_t size,const char* fn,size_t line);
+static
+PFN_new_array_arg3      pfn_new_array_arg3 = NULL;
+
+typedef void (*PFN_delete_arg3)(void* p,const char* fn,size_t line);
+static
+PFN_delete_arg3         pfn_delete_arg3 = NULL;
+
+typedef void (*PFN_delete_array_arg3)(void* p,const char* fn,size_t line);
+static
+PFN_delete_array_arg3   pfn_delete_array_arg3 = NULL;
+
+typedef void* (*PFN_new_arg4)(size_t size,const char* fn,size_t line,const char* tag);
+static
+PFN_new_arg4            pfn_new_arg4 = NULL;
+
+typedef void* (*PFN_new_array_arg4)(size_t size,const char* fn,size_t line,const char* tag);
+static
+PFN_new_array_arg4      pfn_new_array_arg4 = NULL;
+
+typedef void (*PFN_delete_arg4)(void* p,const char* fn,size_t line,const char* tag);
+static
+PFN_delete_arg4         pfn_delete_arg4 = NULL;
+
+typedef void (*PFN_delete_array_arg4)(void* p,const char* fn,size_t line,const char* tag);
+static
+PFN_delete_array_arg4   pfn_delete_array_arg4 = NULL;
+
+static
+void*
+my_new_arg3( size_t size, const char* fn, size_t line )
+{
+    void* p = pfn_new_arg3(size,fn,line);
+
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationUserStaticNew, (DWORD64)p );
+
+    return p;
+}
+
+static
+void*
+my_new_array_arg3( size_t size, const char* fn, size_t line )
+{
+    void* p = pfn_new_array_arg3(size,fn,line);
+
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationUserStaticNewArray, (DWORD64)p );
+
+    return p;
+}
+
+static
+void
+my_delete_arg3( void* p, const char* fn, size_t line )
+{
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationUserStaticDelete, (DWORD64)p );
+
+    pfn_delete_arg3(p,fn,line);
+
+    return;
+}
+
+static
+void
+my_delete_array_arg3( void* p, const char* fn, size_t line )
+{
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationUserStaticDeleteArray, (DWORD64)p );
+
+    pfn_delete_array_arg3(p,fn,line);
+
+    return;
+}
+
+static
+void*
+my_new_arg4( size_t size, const char* fn, size_t line, const char* tag )
+{
+    void* p = pfn_new_arg4(size,fn,line,tag);
+
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationUserStaticNew, (DWORD64)p );
+
+    return p;
+}
+
+static
+void*
+my_new_array_arg4( size_t size, const char* fn, size_t line, const char* tag )
+{
+    void* p = pfn_new_array_arg4(size,fn,line,tag);
+
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationUserStaticNewArray, (DWORD64)p );
+
+    return p;
+}
+
+static
+void
+my_delete_arg4( void* p, const char* fn, size_t line, const char* tag )
+{
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationUserStaticDelete, (DWORD64)p );
+
+    pfn_delete_arg4(p,fn,line,tag);
+
+    return;
+}
+
+static
+void
+my_delete_array_arg4( void* p, const char* fn, size_t line, const char* tag )
+{
+    sMemoryOperationMismatch->sendOperation( MemoryOperationMismatch::kOperationUserStaticDeleteArray, (DWORD64)p );
+
+    pfn_delete_array_arg4(p,fn,line,tag);
+
+    return;
+}
+
+
+
+
 static
 LPVOID      sPageTrampoline  = NULL;
 
@@ -659,6 +782,30 @@ hookUserCPP( const HMODULE hModule )
                             case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArraySize:
                                 addr = reinterpret_cast<LPBYTE>(my_delete_array_size);
                                 break;
+                            case MemoryOperationMismatch::kIndexUserStaticFuncNewArg3:
+                                addr = reinterpret_cast<LPBYTE>(my_new_arg3);
+                                break;
+                            case MemoryOperationMismatch::kIndexUserStaticFuncNewArrayArg3:
+                                addr = reinterpret_cast<LPBYTE>(my_new_array_arg3);
+                                break;
+                            case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArg3:
+                                addr = reinterpret_cast<LPBYTE>(my_delete_arg3);
+                                break;
+                            case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArrayArg3:
+                                addr = reinterpret_cast<LPBYTE>(my_delete_array_arg3);
+                                break;
+                            case MemoryOperationMismatch::kIndexUserStaticFuncNewArg4:
+                                addr = reinterpret_cast<LPBYTE>(my_new_arg4);
+                                break;
+                            case MemoryOperationMismatch::kIndexUserStaticFuncNewArrayArg4:
+                                addr = reinterpret_cast<LPBYTE>(my_new_array_arg4);
+                                break;
+                            case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArg4:
+                                addr = reinterpret_cast<LPBYTE>(my_delete_arg4);
+                                break;
+                            case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArrayArg4:
+                                addr = reinterpret_cast<LPBYTE>(my_delete_array_arg4);
+                                break;
                             default:
                                 assert( false );
                                 break;
@@ -702,6 +849,30 @@ hookUserCPP( const HMODULE hModule )
                                 case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArraySize:
                                     addr = reinterpret_cast<LPBYTE>(my_delete_array_size);
                                     break;
+                                case MemoryOperationMismatch::kIndexUserStaticFuncNewArg3:
+                                    addr = reinterpret_cast<LPBYTE>(my_new_arg3);
+                                    break;
+                                case MemoryOperationMismatch::kIndexUserStaticFuncNewArrayArg3:
+                                    addr = reinterpret_cast<LPBYTE>(my_new_array_arg3);
+                                    break;
+                                case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArg3:
+                                    addr = reinterpret_cast<LPBYTE>(my_delete_arg3);
+                                    break;
+                                case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArrayArg3:
+                                    addr = reinterpret_cast<LPBYTE>(my_delete_array_arg3);
+                                    break;
+                                case MemoryOperationMismatch::kIndexUserStaticFuncNewArg4:
+                                    addr = reinterpret_cast<LPBYTE>(my_new_arg4);
+                                    break;
+                                case MemoryOperationMismatch::kIndexUserStaticFuncNewArrayArg4:
+                                    addr = reinterpret_cast<LPBYTE>(my_new_array_arg4);
+                                    break;
+                                case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArg4:
+                                    addr = reinterpret_cast<LPBYTE>(my_delete_arg4);
+                                    break;
+                                case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArrayArg4:
+                                    addr = reinterpret_cast<LPBYTE>(my_delete_array_arg4);
+                                    break;
                                 default:
                                     assert( false );
                                     break;
@@ -737,6 +908,30 @@ hookUserCPP( const HMODULE hModule )
                             break;
                         case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArraySize:
                             pfn_delete_array_size = reinterpret_cast<PFN_delete_array_size>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexUserStaticFuncNewArg3:
+                            pfn_new_arg3 = reinterpret_cast<PFN_new_arg3>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexUserStaticFuncNewArrayArg3:
+                            pfn_new_array_arg3 = reinterpret_cast<PFN_new_array_arg3>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArg3:
+                            pfn_delete_arg3 = reinterpret_cast<PFN_delete_arg3>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArrayArg3:
+                            pfn_delete_array_arg3 = reinterpret_cast<PFN_delete_array_arg3>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexUserStaticFuncNewArg4:
+                            pfn_new_arg4 = reinterpret_cast<PFN_new_arg4>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexUserStaticFuncNewArrayArg4:
+                            pfn_new_array_arg4 = reinterpret_cast<PFN_new_array_arg4>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArg4:
+                            pfn_delete_arg4 = reinterpret_cast<PFN_delete_arg4>(pHookCode);
+                            break;
+                        case MemoryOperationMismatch::kIndexUserStaticFuncDeleteArrayArg4:
+                            pfn_delete_array_arg4 = reinterpret_cast<PFN_delete_array_arg4>(pHookCode);
                             break;
                         }
 
@@ -960,6 +1155,14 @@ unhookUserCPP( void )
     pfn_delete_array = NULL;
     pfn_delete_size = NULL;
     pfn_delete_array_size = NULL;
+    pfn_new_arg3 = NULL;
+    pfn_delete_arg3 = NULL;
+    pfn_new_array_arg3 = NULL;
+    pfn_delete_array_arg3 = NULL;
+    pfn_new_arg4 = NULL;
+    pfn_delete_arg4 = NULL;
+    pfn_new_array_arg4 = NULL;
+    pfn_delete_array_arg4 = NULL;
 
     hookutil::trampolinePageDeallocate( sPageTrampoline );
     sPageTrampoline = NULL;

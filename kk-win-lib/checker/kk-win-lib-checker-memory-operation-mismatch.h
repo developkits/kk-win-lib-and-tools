@@ -155,7 +155,25 @@ public:
         , kIndexUserStaticFuncDeleteArraySize = 10
         , kIndexUserStaticFuncDeleteArraySizeLength = 11
 
-        , kIndexUserStaticFuncMAX = 12
+
+        , kIndexUserStaticFuncNewArg3 = 12
+        , kIndexUserStaticFuncNewArg3Length = 13
+        , kIndexUserStaticFuncDeleteArg3 = 14
+        , kIndexUserStaticFuncDeleteArg3Length = 15
+        , kIndexUserStaticFuncNewArrayArg3 = 16
+        , kIndexUserStaticFuncNewArrayArg3Length = 17
+        , kIndexUserStaticFuncDeleteArrayArg3 = 18
+        , kIndexUserStaticFuncDeleteArrayArg3Length = 19
+        , kIndexUserStaticFuncNewArg4 = 20
+        , kIndexUserStaticFuncNewArg4Length = 21
+        , kIndexUserStaticFuncDeleteArg4 = 22
+        , kIndexUserStaticFuncDeleteArg4Length = 23
+        , kIndexUserStaticFuncNewArrayArg4 = 24
+        , kIndexUserStaticFuncNewArrayArg4Length = 25
+        , kIndexUserStaticFuncDeleteArrayArg4 = 26
+        , kIndexUserStaticFuncDeleteArrayArg4Length = 27
+
+        , kIndexUserStaticFuncMAX = 28
     };
 
 protected:

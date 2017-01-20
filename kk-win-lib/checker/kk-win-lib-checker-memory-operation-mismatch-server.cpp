@@ -679,6 +679,39 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                             module.user.dwUserStaticDeleteArraySizeLength = funcInfo[index].size;
                                             break;
 
+                                        case DebugSymbol::kIndexOperationNewArg3:
+                                            module.user.dwUserStaticNewArg3 = funcInfo[index].dwAddr;
+                                            module.user.dwUserStaticNewArg3Length = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationDeleteArg3:
+                                            module.user.dwUserStaticDeleteArg3 = funcInfo[index].dwAddr;
+                                            module.user.dwUserStaticDeleteArg3Length = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationNewArrayArg3:
+                                            module.user.dwUserStaticNewArrayArg3 = funcInfo[index].dwAddr;
+                                            module.user.dwUserStaticNewArrayArg3Length = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationDeleteArrayArg3:
+                                            module.user.dwUserStaticDeleteArrayArg3 = funcInfo[index].dwAddr;
+                                            module.user.dwUserStaticDeleteArrayArg3Length = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationNewArg4:
+                                            module.user.dwUserStaticNewArg4 = funcInfo[index].dwAddr;
+                                            module.user.dwUserStaticNewArg4Length = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationDeleteArg4:
+                                            module.user.dwUserStaticDeleteArg4 = funcInfo[index].dwAddr;
+                                            module.user.dwUserStaticDeleteArg4Length = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationNewArrayArg4:
+                                            module.user.dwUserStaticNewArrayArg4 = funcInfo[index].dwAddr;
+                                            module.user.dwUserStaticNewArrayArg4Length = funcInfo[index].size;
+                                            break;
+                                        case DebugSymbol::kIndexOperationDeleteArrayArg4:
+                                            module.user.dwUserStaticDeleteArrayArg4 = funcInfo[index].dwAddr;
+                                            module.user.dwUserStaticDeleteArrayArg4Length = funcInfo[index].size;
+                                            break;
+
                                         default:
                                             assert( false );
                                             break;
@@ -1003,6 +1036,35 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             }
                         }
 
+                        // check CERT DCL54-CPP
+                        {
+                            mapRecordUser::iterator itUser = mapMemoryUser.find( memory.pointer );
+                            if ( mapMemoryUser.end() == itUser )
+                            {
+                            }
+                            else
+                            {
+                                if ( false == negative )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+
+                                mapMemoryUser.erase( itUser );
+                            }
+                        }
+
                         if ( negative )
                         {
                         }
@@ -1070,6 +1132,35 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     }
                                 }
                                 mapMemory.erase( it );
+                            }
+                        }
+
+                        // check CERT DCL54-CPP
+                        {
+                            mapRecordUser::iterator itUser = mapMemoryUser.find( memory.pointer );
+                            if ( mapMemoryUser.end() == itUser )
+                            {
+                            }
+                            else
+                            {
+                                if ( false == negative )
+                                {
+                                    // error
+                                    action.header.size = sizeof(action);
+                                    action.header.mode = kModeAction;
+                                    if ( pThis->mDoBreak )
+                                    {
+                                        action.data.action = kActionBreak;
+                                    }
+                                    else
+                                    {
+                                        action.data.action = kActionNone;
+                                    }
+                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    negative = true;
+                                }
+
+                                mapMemoryUser.erase( itUser );
                             }
                         }
 

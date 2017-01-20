@@ -190,6 +190,23 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
             mUserStaticFunc[kIndexUserStaticFuncDeleteArraySize]          = module.user.dwUserStaticDeleteArraySize;
             mUserStaticFunc[kIndexUserStaticFuncDeleteArraySizeLength]    = module.user.dwUserStaticDeleteArraySizeLength;
 
+            mUserStaticFunc[kIndexUserStaticFuncNewArg3]                  = module.user.dwUserStaticNewArg3;
+            mUserStaticFunc[kIndexUserStaticFuncNewArg3Length]            = module.user.dwUserStaticNewArg3Length;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArg3]               = module.user.dwUserStaticDeleteArg3;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArg3Length]         = module.user.dwUserStaticDeleteArg3Length;
+            mUserStaticFunc[kIndexUserStaticFuncNewArrayArg3]             = module.user.dwUserStaticNewArrayArg3;
+            mUserStaticFunc[kIndexUserStaticFuncNewArrayArg3Length]       = module.user.dwUserStaticNewArrayArg3Length;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArrayArg3]          = module.user.dwUserStaticDeleteArrayArg3;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArrayArg3Length]    = module.user.dwUserStaticDeleteArrayArg3Length;
+            mUserStaticFunc[kIndexUserStaticFuncNewArg4]                  = module.user.dwUserStaticNewArg4;
+            mUserStaticFunc[kIndexUserStaticFuncNewArg4Length]            = module.user.dwUserStaticNewArg4Length;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArg4]               = module.user.dwUserStaticDeleteArg4;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArg4Length]         = module.user.dwUserStaticDeleteArg4Length;
+            mUserStaticFunc[kIndexUserStaticFuncNewArrayArg4]             = module.user.dwUserStaticNewArrayArg4;
+            mUserStaticFunc[kIndexUserStaticFuncNewArrayArg4Length]       = module.user.dwUserStaticNewArrayArg4Length;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArrayArg4]          = module.user.dwUserStaticDeleteArrayArg4;
+            mUserStaticFunc[kIndexUserStaticFuncDeleteArrayArg4Length]    = module.user.dwUserStaticDeleteArrayArg4Length;
+
         }
     }
 

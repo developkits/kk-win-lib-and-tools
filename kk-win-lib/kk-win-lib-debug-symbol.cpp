@@ -553,9 +553,12 @@ enum enumDataType
     kDataTypeNone = 0
     , kDataTypeVoid = 1
     , kDataTypeVoidPointer = 2
-    , kDataTypeUInt = 3
-    , kDataTypeUDT = 4
-    , kDataTypeUDTPointer = 5
+    , kDataTypeChar = 3
+    , kDataTypeCharPointer = 4
+    , kDataTypeInt = 5
+    , kDataTypeUInt = 6
+    , kDataTypeUDT = 7
+    , kDataTypeUDTPointer = 8
 };
 
 static
@@ -672,9 +675,10 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
         DWORD           dwCallConversion = 0;
         enumDataType    enmTypeArg0 = kDataTypeNone;
         enumDataType    enmTypeArg1 = kDataTypeNone;
+        enumDataType    enmTypeArg2 = kDataTypeNone;
+        enumDataType    enmTypeArg3 = kDataTypeNone;
         DWORD           dwTypeIndexArg1 = 0;
-        bool            isArgSingle = true;
-        bool            isArgDouble = true;
+        size_t          numArg = 0;
 
 
 #if 0
@@ -801,15 +805,14 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     const DWORD dwErr = ::GetLastError();
                 }
             }
-            const size_t nArgCount = 4;
+            const size_t nArgCount = 5;
             if ( (
                 (1 == nCount )
                 && (1 == nCountChild)
                 )
             )
             {
-                isArgSingle = true;
-                isArgDouble = false;
+                numArg = 1;
             }
             else
             if ( (
@@ -818,8 +821,25 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                 )
             )
             {
-                isArgSingle = false;
-                isArgDouble = true;
+                numArg = 2;
+            }
+            else
+            if ( (
+                (3 == nCount )
+                && (3 == nCountChild)
+                )
+            )
+            {
+                numArg = 3;
+            }
+            else
+            if ( (
+                (4 == nCount )
+                && (4 == nCountChild)
+                )
+            )
+            {
+                numArg = 4;
             }
 
             if ( nCountChild < nArgCount )
@@ -911,6 +931,37 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                                     {
                                         enmTypeArg1 = kDataTypeVoidPointer;
                                     }
+                                    else
+                                    if ( 2 == index )
+                                    {
+                                        enmTypeArg2 = kDataTypeVoidPointer;
+                                    }
+                                    else
+                                    if ( 3 == index )
+                                    {
+                                        enmTypeArg3 = kDataTypeVoidPointer;
+                                    }
+                                    break;
+                                case 2: // btChar
+                                    if ( 0 == index )
+                                    {
+                                        enmTypeArg0 = kDataTypeCharPointer;
+                                    }
+                                    else
+                                    if ( 1 == index )
+                                    {
+                                        enmTypeArg1 = kDataTypeCharPointer;
+                                    }
+                                    else
+                                    if ( 2 == index )
+                                    {
+                                        enmTypeArg2 = kDataTypeCharPointer;
+                                    }
+                                    else
+                                    if ( 3 == index )
+                                    {
+                                        enmTypeArg3 = kDataTypeCharPointer;
+                                    }
                                     break;
                                 }
                             }
@@ -926,6 +977,16 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                                 {
                                     enmTypeArg1 = kDataTypeUDTPointer;
                                     dwTypeIndexArg1 = dwTypeIndexPointer;
+                                }
+                                else
+                                if ( 2 == index )
+                                {
+                                    enmTypeArg2 = kDataTypeUDTPointer;
+                                }
+                                else
+                                if ( 3 == index )
+                                {
+                                    enmTypeArg3 = kDataTypeUDTPointer;
                                 }
                             }
 
@@ -953,6 +1014,73 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                                 if ( 1 == index )
                                 {
                                     enmTypeArg1 = kDataTypeVoid;
+                                }
+                                else
+                                if ( 2 == index )
+                                {
+                                    enmTypeArg2 = kDataTypeVoid;
+                                }
+                                else
+                                if ( 3 == index )
+                                {
+                                    enmTypeArg3 = kDataTypeVoid;
+                                }
+                                break;
+                            case 6: // btInt
+                                if ( 0 == index )
+                                {
+                                    ULONG64 length = 0;
+                                    {
+                                        const BOOL BRet = pThis->mSymGetTypeInfo( hProcess, dwModuleBase, dwTypeIndex, TI_GET_LENGTH, &length );
+                                        if ( !BRet )
+                                        {
+                                            const DWORD dwErr = ::GetLastError();
+                                        }
+                                    }
+
+                                    enmTypeArg0 = kDataTypeInt;
+                                }
+                                else
+                                if ( 1 == index )
+                                {
+                                    ULONG64 length = 0;
+                                    {
+                                        const BOOL BRet = pThis->mSymGetTypeInfo( hProcess, dwModuleBase, dwTypeIndex, TI_GET_LENGTH, &length );
+                                        if ( !BRet )
+                                        {
+                                            const DWORD dwErr = ::GetLastError();
+                                        }
+                                    }
+
+                                    enmTypeArg1 = kDataTypeInt;
+                                }
+                                else
+                                if ( 2 == index )
+                                {
+                                    ULONG64 length = 0;
+                                    {
+                                        const BOOL BRet = pThis->mSymGetTypeInfo( hProcess, dwModuleBase, dwTypeIndex, TI_GET_LENGTH, &length );
+                                        if ( !BRet )
+                                        {
+                                            const DWORD dwErr = ::GetLastError();
+                                        }
+                                    }
+
+                                    enmTypeArg2 = kDataTypeInt;
+                                }
+                                else
+                                if ( 3 == index )
+                                {
+                                    ULONG64 length = 0;
+                                    {
+                                        const BOOL BRet = pThis->mSymGetTypeInfo( hProcess, dwModuleBase, dwTypeIndex, TI_GET_LENGTH, &length );
+                                        if ( !BRet )
+                                        {
+                                            const DWORD dwErr = ::GetLastError();
+                                        }
+                                    }
+
+                                    enmTypeArg3 = kDataTypeInt;
                                 }
                                 break;
                             case 7: // btUInt
@@ -983,6 +1111,34 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
 
                                     enmTypeArg1 = kDataTypeUInt;
                                 }
+                                else
+                                if ( 2 == index )
+                                {
+                                    ULONG64 length = 0;
+                                    {
+                                        const BOOL BRet = pThis->mSymGetTypeInfo( hProcess, dwModuleBase, dwTypeIndex, TI_GET_LENGTH, &length );
+                                        if ( !BRet )
+                                        {
+                                            const DWORD dwErr = ::GetLastError();
+                                        }
+                                    }
+
+                                    enmTypeArg2 = kDataTypeUInt;
+                                }
+                                else
+                                if ( 3 == index )
+                                {
+                                    ULONG64 length = 0;
+                                    {
+                                        const BOOL BRet = pThis->mSymGetTypeInfo( hProcess, dwModuleBase, dwTypeIndex, TI_GET_LENGTH, &length );
+                                        if ( !BRet )
+                                        {
+                                            const DWORD dwErr = ::GetLastError();
+                                        }
+                                    }
+
+                                    enmTypeArg3 = kDataTypeUInt;
+                                }
                                 break;
                             default:
                                 ::DebugBreak();
@@ -998,7 +1154,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
             }
 
 #if 1
-            if ( isArgSingle || isArgDouble )
+            if ( 1 <= numArg && numArg <= 4 )
             {
                 const char*     strFuncReturn = "";
                 switch ( enmTypeReturn )
@@ -1043,6 +1199,12 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                 case kDataTypeVoidPointer:
                     strFuncArg1 = "void*";
                     break;
+                case kDataTypeChar:
+                    strFuncArg1 = "char";
+                    break;
+                case kDataTypeCharPointer:
+                    strFuncArg1 = "char*";
+                    break;
                 case kDataTypeUInt:
                     strFuncArg1 = "size_t";
                     break;
@@ -1054,9 +1216,67 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     break;
                 }
 
+                const char*     strFuncArg2 = "";
+                switch ( enmTypeArg2 )
+                {
+                case kDataTypeVoid:
+                    strFuncArg2 = "void";
+                    break;
+                case kDataTypeVoidPointer:
+                    strFuncArg2 = "void*";
+                    break;
+                case kDataTypeChar:
+                    strFuncArg2 = "char";
+                    break;
+                case kDataTypeCharPointer:
+                    strFuncArg2 = "char*";
+                    break;
+                case kDataTypeInt:
+                    strFuncArg2 = "int";
+                    break;
+                case kDataTypeUInt:
+                    strFuncArg2 = "size_t";
+                    break;
+                case kDataTypeUDTPointer:
+                    strFuncArg2 = "";
+                case kDataTypeNone:
+                    break;
+                default:
+                    break;
+                }
+
+                const char*     strFuncArg3 = "";
+                switch ( enmTypeArg3 )
+                {
+                case kDataTypeVoid:
+                    strFuncArg3 = "void";
+                    break;
+                case kDataTypeVoidPointer:
+                    strFuncArg3 = "void*";
+                    break;
+                case kDataTypeChar:
+                    strFuncArg3 = "char";
+                    break;
+                case kDataTypeCharPointer:
+                    strFuncArg3 = "char*";
+                    break;
+                case kDataTypeInt:
+                    strFuncArg3 = "int";
+                    break;
+                case kDataTypeUInt:
+                    strFuncArg3 = "size_t";
+                    break;
+                case kDataTypeUDTPointer:
+                    strFuncArg3 = "";
+                case kDataTypeNone:
+                    break;
+                default:
+                    break;
+                }
+
                 char    buff[1024];
                 buff[0] = '\0';
-                if ( isArgSingle )
+                if ( 1 == numArg )
                 {
                     ::wsprintfA( buff, "%p %08x %4u %4u %s ::%s(%s)\n"
                         , (void *)pSymInfo->Address, pSymInfo->Index, pSymInfo->Tag, pSymInfo->Index
@@ -1065,7 +1285,8 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                         , strFuncArg0
                         );
                 }
-                if ( isArgDouble )
+                else
+                if ( 2 == numArg )
                 {
                     if ( kDataTypeUDTPointer == enmTypeArg1 )
                     {
@@ -1104,11 +1325,37 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                             );
                     }
                 }
+                else
+                if ( 3 == numArg )
+                {
+                    ::wsprintfA( buff, "%p %08x %4u %4u %s ::%s(%s,%s,%s)\n"
+                        , (void *)pSymInfo->Address, pSymInfo->Index, pSymInfo->Tag, pSymInfo->Index
+                        , strFuncReturn
+                        , pSymInfo->Name
+                        , strFuncArg0
+                        , strFuncArg1
+                        , strFuncArg2
+                        );
+                }
+                else
+                if ( 4 == numArg )
+                {
+                    ::wsprintfA( buff, "%p %08x %4u %4u %s ::%s(%s,%s,%s,%s)\n"
+                        , (void *)pSymInfo->Address, pSymInfo->Index, pSymInfo->Tag, pSymInfo->Index
+                        , strFuncReturn
+                        , pSymInfo->Name
+                        , strFuncArg0
+                        , strFuncArg1
+                        , strFuncArg2
+                        , strFuncArg3
+                        );
+                }
+
                 ::OutputDebugStringA( buff );
             }
 #endif
 
-            if ( isArgSingle )
+            if ( 1 == numArg )
             {
                 const DWORD64   addr = pSymInfo->Address - dwModuleBase;
                 switch ( enmOperation )
@@ -1192,7 +1439,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                 }
             }
 
-            if ( isArgDouble )
+            if ( 2 == numArg )
             {
                 const DWORD64   addr = pSymInfo->Address - dwModuleBase;
                 switch ( enmOperation )
@@ -1239,6 +1486,198 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
 
                             std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
                             pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArraySize].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+
+                default:
+                    assert( false );
+                    break;
+                }
+            }
+
+            if ( 3 == numArg )
+            {
+                const DWORD64   addr = pSymInfo->Address - dwModuleBase;
+                switch ( enmOperation )
+                {
+                case kOperationNew:
+                    if ( kDataTypeVoidPointer == enmTypeReturn )
+                    {
+                        if (
+                            (kDataTypeUInt == enmTypeArg0)
+                            && (kDataTypeUDTPointer != enmTypeArg1)
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo>::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArg3].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+                case kOperationNewArray:
+                    if ( kDataTypeVoidPointer == enmTypeReturn )
+                    {
+                        if (
+                            (kDataTypeUInt == enmTypeArg0)
+                            && (kDataTypeUDTPointer != enmTypeArg1)
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArrayArg3].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+                case kOperationDelete:
+                    if ( kDataTypeVoid == enmTypeReturn )
+                    {
+                        if (
+                            (kDataTypeUInt == enmTypeArg0)
+                            && (kDataTypeUDTPointer != enmTypeArg1)
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArg3].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+                case kOperationDeleteArray:
+                    if ( kDataTypeVoid == enmTypeReturn )
+                    {
+                        if (
+                            (kDataTypeUInt == enmTypeArg0)
+                            && (kDataTypeUDTPointer != enmTypeArg1)
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArrayArg3].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+
+                default:
+                    assert( false );
+                    break;
+                }
+            }
+
+            if ( 4 == numArg )
+            {
+                const DWORD64   addr = pSymInfo->Address - dwModuleBase;
+                switch ( enmOperation )
+                {
+                case kOperationNew:
+                    if ( kDataTypeVoidPointer == enmTypeReturn )
+                    {
+                        if (
+                            (kDataTypeUInt == enmTypeArg0)
+                            && (kDataTypeUDTPointer != enmTypeArg1)
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo>::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArg4].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+                case kOperationNewArray:
+                    if ( kDataTypeVoidPointer == enmTypeReturn )
+                    {
+                        if (
+                            (kDataTypeUInt == enmTypeArg0)
+                            && (kDataTypeUDTPointer != enmTypeArg1)
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationNewArrayArg4].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+                case kOperationDelete:
+                    if ( kDataTypeVoid == enmTypeReturn )
+                    {
+                        if (
+                            (kDataTypeUInt == enmTypeArg0)
+                            && (kDataTypeUDTPointer != enmTypeArg1)
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArg4].insert(
+                                std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
+                                );
+                            assert( true == ret.second );
+                        }
+                    }
+                    break;
+                case kOperationDeleteArray:
+                    if ( kDataTypeVoid == enmTypeReturn )
+                    {
+                        if (
+                            (kDataTypeUInt == enmTypeArg0)
+                            && (kDataTypeUDTPointer != enmTypeArg1)
+                        )
+                        {
+                            DebugSymbol::FuncInfo   funcInfo;
+                            funcInfo.dwAddr = addr;
+                            funcInfo.size = pSymInfo->Size;
+                            funcInfo.isCRT = false;
+
+                            std::pair<std::map<DWORD64,DebugSymbol::FuncInfo >::iterator,bool> ret = 
+                            pThis->mGlobalReplacements[DebugSymbol::kIndexOperationDeleteArrayArg4].insert(
                                 std::pair<DWORD64,DebugSymbol::FuncInfo>( addr, funcInfo )
                                 );
                             assert( true == ret.second );
