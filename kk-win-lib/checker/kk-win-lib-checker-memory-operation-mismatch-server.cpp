@@ -588,7 +588,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         {
                         }
                     }
-                    else
+
                     {
                         size_t  countArray[DebugSymbol::kIndexOperationMax];
                         debugSymbol.getGlobalReplacementsCount( countArray );
