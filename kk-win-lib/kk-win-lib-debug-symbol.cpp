@@ -1550,7 +1550,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     if ( kDataTypeVoid == enmTypeReturn )
                     {
                         if (
-                            (kDataTypeUInt == enmTypeArg0)
+                            (kDataTypeVoidPointer == enmTypeArg0)
                             && (kDataTypeUDTPointer != enmTypeArg1)
                         )
                         {
@@ -1571,7 +1571,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     if ( kDataTypeVoid == enmTypeReturn )
                     {
                         if (
-                            (kDataTypeUInt == enmTypeArg0)
+                            (kDataTypeVoidPointer == enmTypeArg0)
                             && (kDataTypeUDTPointer != enmTypeArg1)
                         )
                         {
@@ -1646,7 +1646,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     if ( kDataTypeVoid == enmTypeReturn )
                     {
                         if (
-                            (kDataTypeUInt == enmTypeArg0)
+                            (kDataTypeVoidPointer == enmTypeArg0)
                             && (kDataTypeUDTPointer != enmTypeArg1)
                         )
                         {
@@ -1667,7 +1667,7 @@ DebugSymbol::DebugSymbolImpl::symEnumSymbolsProc(
                     if ( kDataTypeVoid == enmTypeReturn )
                     {
                         if (
-                            (kDataTypeUInt == enmTypeArg0)
+                            (kDataTypeVoidPointer == enmTypeArg0)
                             && (kDataTypeUDTPointer != enmTypeArg1)
                         )
                         {
