@@ -1929,6 +1929,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     negative = true;
                                 }
                                 it->second.pop();
+                                if ( it->second.empty() )
+                                {
+                                    mapMemoryUser.erase( it );
+                                }
                             }
                         }
 
@@ -1999,6 +2003,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     }
                                 }
                                 it->second.pop();
+                                if ( it->second.empty() )
+                                {
+                                    mapMemoryUser.erase( it );
+                                }
                             }
                         }
 
@@ -2062,6 +2070,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     negative = true;
                                 }
                                 it->second.pop();
+                                if ( it->second.empty() )
+                                {
+                                    mapMemoryUser.erase( it );
+                                }
                             }
                         }
 
@@ -2131,6 +2143,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     }
                                 }
                                 it->second.pop();
+                                if ( it->second.empty() )
+                                {
+                                    mapMemoryUser.erase( it );
+                                }
                             }
                         }
 
