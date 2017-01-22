@@ -9,6 +9,9 @@ check memory operation mismatch.
   * compile /MD (use dll crt)
   * compile /Zi (generage debug info)
   * link /DEBUG (generate pdb)
+  * disable expand inline function, global replacement.  
+    compile /Ob0 (disable inline function expansion)  
+    or control by #pragma optimize("",off) and #pragma optimize("",on) to global replacement
 
 
 * target program 32bit
