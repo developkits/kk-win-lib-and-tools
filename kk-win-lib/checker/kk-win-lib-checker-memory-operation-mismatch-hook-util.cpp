@@ -161,7 +161,7 @@ trampolinePageDeallocate( LPVOID pTrampolinePage )
 }
 
 bool
-tranpolinePageDropWriteOperation( LPVOID pTrampolinePage, const DWORD changeSize )
+trampolinePageDropWriteOperation( LPVOID pTrampolinePage, const DWORD changeSize )
 {
     bool result = true;
 

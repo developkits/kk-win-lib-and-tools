@@ -1006,7 +1006,7 @@ hookUserCPP( const HMODULE hModule )
         }
     }
 
-    hookutil::tranpolinePageDropWriteOperation( sPageTrampoline, (const DWORD)pageSize );
+    hookutil::trampolinePageDropWriteOperation( sPageTrampoline, (const DWORD)pageSize );
 
     return true;
 }
