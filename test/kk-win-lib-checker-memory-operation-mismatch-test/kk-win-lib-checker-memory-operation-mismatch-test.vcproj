@@ -439,6 +439,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\kk-win-lib\kk-win-lib-hook-local.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\kk-win-lib\kk-win-lib-hook-local.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\kk-win-lib\kk-win-lib-namedpipe.cpp"
 				>
 			</File>

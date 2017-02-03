@@ -32,6 +32,7 @@
 
 #include "../../kk-win-lib/kk-win-lib-event.h"
 #include "../../kk-win-lib/kk-win-lib-namedpipe.h"
+#include "../../kk-win-lib/kk-win-lib-hook-local.h"
 #include "../../kk-win-lib/checker/kk-win-lib-checker-memory-operation-mismatch.h"
 #include "../../kk-win-lib/checker/kk-win-lib-checker-memory-operation-mismatch-client.h"
 #include "../../kk-win-lib/checker/kk-win-lib-checker-memory-operation-mismatch-server.h"
