@@ -26,8 +26,8 @@
 #include <windows.h>
 
 #include "../kk-win-lib-namedpipe.h"
-
 #include "kk-win-lib-checker-memory-operation-mismatch.h"
+#include "../kk-win-lib-hook-local.h"
 #include "kk-win-lib-checker-memory-operation-mismatch-client.h"
 
 #include "kk-win-lib-checker-memory-operation-mismatch-hook-iat.h"
@@ -71,6 +71,10 @@ MemoryOperationMismatchClient::term(void)
 
     result = MemoryOperationMismatch::term();
 
+    {
+        const bool bRet = mHookLocal.grantWriteOperation();
+    }
+
     if ( mUseHookUserCPP )
     {
         const bool bRet = unhookMemoryOperationMismatchUserCPP();
@@ -97,6 +101,10 @@ MemoryOperationMismatchClient::term(void)
     mUseHookCRTNewArray = true;
     mUseHookCRTCPP = true;
     mUseHookUserCPP = true;
+
+    {
+        const bool bRet = mHookLocal.term();
+    }
 
     return result;
 }
@@ -210,6 +218,62 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
         }
     }
 
+    {
+        DWORD64 minOffset = (DWORD64)-1;
+        DWORD64 maxOffset = 0;
+        size_t hookCount = 0;
+
+        {
+            for ( size_t index = 0; index < kIndexCRTStaticFuncMAX; index += 2 )
+            {
+                const DWORD64 dwOffset = mCRTStaticFunc[index+0];
+                const DWORD64 dwSize   = mCRTStaticFunc[index+1];
+
+                if ( 0 != dwOffset || 0 != dwSize )
+                {
+                    hookCount += 1;
+                }
+
+                if ( dwOffset < minOffset )
+                {
+                    minOffset = dwOffset;
+                }
+                if ( maxOffset < dwOffset )
+                {
+                    maxOffset = dwOffset;
+                }
+            }
+
+            for ( size_t index = 0; index < kIndexUserStaticFuncMAX; index += 2 )
+            {
+                const DWORD64 dwOffset = mUserStaticFunc[index+0];
+                const DWORD64 dwSize   = mUserStaticFunc[index+1];
+
+                if ( 0 != dwOffset || 0 != dwSize )
+                {
+                    hookCount += 1;
+                }
+
+                if ( dwOffset < minOffset )
+                {
+                    minOffset = dwOffset;
+                }
+                if ( maxOffset < dwOffset )
+                {
+                    maxOffset = dwOffset;
+                }
+            }
+        }
+
+        const LPBYTE moduleBase = reinterpret_cast<const LPBYTE>(::GetModuleHandleA( NULL ));
+        const LPBYTE minAddr = moduleBase + minOffset;
+        const LPBYTE maxAddr = moduleBase + maxOffset;
+
+        const bool bRet = mHookLocal.init( minAddr, maxAddr, hookCount );
+        result = bRet;
+
+    }
+
 
     if ( mUseHookUserCPP )
     {
@@ -242,6 +306,11 @@ MemoryOperationMismatchClient::sendProcessId( const DWORD processId )
         const HMODULE hModule = ::GetModuleHandleA( NULL );
         const bool bRet = hookMemoryOperationMismatchIAT( hModule, this );
         result = bRet;
+    }
+
+
+    {
+        const bool bRet = mHookLocal.dropWriteOperation();
     }
 
     {
@@ -417,6 +486,26 @@ MemoryOperationMismatchClient::disableHookUserCPP( const bool disableHook )
 
     return oldValue;
 }
+
+
+
+
+bool
+MemoryOperationMismatchClient::hook( size_t& indexHook, const void* moduleBase, const size_t nOrigOffset, const size_t nOrigSize, const void* hookFunc, void** origFunc )
+{
+    return mHookLocal.hook( indexHook, moduleBase, nOrigOffset, nOrigSize, hookFunc, origFunc );
+}
+
+bool
+MemoryOperationMismatchClient::unhook( const size_t indexHook )
+{
+    return mHookLocal.unhook( indexHook );
+}
+
+
+
+
+
 
 } // namespace checker
 

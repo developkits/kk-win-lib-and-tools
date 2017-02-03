@@ -89,6 +89,18 @@ protected:
     bool                mUseHookCRTCPP;
     bool                mUseHookUserCPP;
 
+
+public:
+    bool
+    hook( size_t& indexHook, const void* moduleBase, const size_t nOrigOffset, const size_t nOrigSize, const void* hookFunc, void** origFunc );
+
+    bool
+    unhook( const size_t indexHook );
+
+protected:
+    kk::HookLocal       mHookLocal;
+
+
 private:
     explicit MemoryOperationMismatchClient(const MemoryOperationMismatchClient&);
     MemoryOperationMismatchClient& operator=(const MemoryOperationMismatchClient&);
