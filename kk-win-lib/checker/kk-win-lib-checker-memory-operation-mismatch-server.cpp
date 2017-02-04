@@ -545,6 +545,18 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             const size_t funcCount = funcCountFile[indexFile];
                             fetchFunc( module.data, funcCount, funcFile[indexFile] );
                         }
+                        else
+                        if ( 0 == ::lstrcmpiA(pFile, "api-ms-win-crt-string-l1-1-0.dll" ) )
+                        {
+                            HMODULE hModule = remoteProcess.findModule( "api-ms-win-crt-string-l1-1-0.dll" );
+                            //module.data.module = (DWORD64)hModule;
+                            //module.data.moduleInfo.info.version = enmVS2015;
+                            //module.data.moduleInfo.info.isDebug = false;
+                            //module.data.moduleInfo.info.isCRTStaticLinked = true;
+
+                            const size_t funcCount = funcCountFile[indexFile];
+                            fetchFunc( module.data, funcCount, funcFile[indexFile] );
+                        }
                     }
                 }
 
