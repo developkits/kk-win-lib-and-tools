@@ -61,6 +61,8 @@ protected:
     __stdcall
     threadServer( void* pVoid );
 
+    bool
+    responseError( void* pBuff, size_t& sendedSize );
 
 protected:
     DWORD64             mCRTOffsetIAT[kIndexOperationMAX];

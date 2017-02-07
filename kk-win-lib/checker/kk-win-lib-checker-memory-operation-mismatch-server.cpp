@@ -215,6 +215,34 @@ MemoryOperationMismatchServer::serverWaitFinish( void )
 
 
 
+bool
+MemoryOperationMismatchServer::responseError( void* pBuff, size_t& sendedSize )
+{
+    packetAction&   action = reinterpret_cast<packetAction&>(pBuff);
+
+    action.header.size = sizeof(action);
+    action.header.mode = kModeAction;
+    if ( this->mDoBreak )
+    {
+        action.data.action = kActionBreak;
+    }
+    else
+    {
+        action.data.action = kActionNone;
+    }
+    if ( this->mNeedBreakMismatch )
+    {
+        ::DebugBreak();
+    }
+
+    const bool result = this->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+
+    return result;
+}
+
+
+
+
 
 
 typedef std::pair<DWORD64,MemoryOperationMismatch::enumMemoryOperation> pairRecord;
@@ -837,21 +865,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() != it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
@@ -859,21 +873,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( false == ret.second )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                         }
@@ -908,21 +908,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -940,21 +926,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                                 mapMemory.erase( it );
@@ -998,21 +970,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() != it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
@@ -1020,21 +978,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( false == ret.second )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                         }
@@ -1067,21 +1011,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -1089,21 +1019,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( kOperationNew != it->second )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                                 mapMemory.erase( it );
@@ -1121,17 +1037,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( false == negative )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
 
@@ -1167,21 +1073,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -1195,21 +1087,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         // error
-                                        action.header.size = sizeof(action);
-                                        action.header.mode = kModeAction;
-                                        if ( pThis->mDoBreak )
-                                        {
-                                            action.data.action = kActionBreak;
-                                        }
-                                        else
-                                        {
-                                            action.data.action = kActionNone;
-                                        }
-                                        if ( pThis->mNeedBreakMismatch )
-                                        {
-                                            ::DebugBreak();
-                                        }
-                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        pThis->responseError( &action, sendedSize );
                                         negative = true;
                                     }
                                 }
@@ -1228,21 +1106,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( false == negative )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
 
@@ -1280,21 +1144,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() != it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
@@ -1302,21 +1152,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( false == ret.second )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                         }
@@ -1350,21 +1186,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -1377,21 +1199,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                                 mapMemory.erase( it );
@@ -1441,21 +1249,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 else
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                             }
@@ -1466,21 +1260,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( false == ret.second )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                             }
@@ -1521,21 +1301,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 else
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                             }
@@ -1546,21 +1312,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( false == ret.second )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                             }
@@ -1594,21 +1346,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -1616,21 +1354,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( kOperationCRTStaticNew != it->second )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                                 it->second = kOperationMalloc;
@@ -1665,21 +1389,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -1693,21 +1403,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         // error
-                                        action.header.size = sizeof(action);
-                                        action.header.mode = kModeAction;
-                                        if ( pThis->mDoBreak )
-                                        {
-                                            action.data.action = kActionBreak;
-                                        }
-                                        else
-                                        {
-                                            action.data.action = kActionNone;
-                                        }
-                                        if ( pThis->mNeedBreakMismatch )
-                                        {
-                                            ::DebugBreak();
-                                        }
-                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        pThis->responseError( &action, sendedSize );
                                         negative = true;
                                     }
                                 }
@@ -1743,21 +1439,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -1765,21 +1447,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( kOperationCRTStaticNew != it->second )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                                 it->second = kOperationCRTStaticNew;
@@ -1813,21 +1481,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemory.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -1841,21 +1495,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         // error
-                                        action.header.size = sizeof(action);
-                                        action.header.mode = kModeAction;
-                                        if ( pThis->mDoBreak )
-                                        {
-                                            action.data.action = kActionBreak;
-                                        }
-                                        else
-                                        {
-                                            action.data.action = kActionNone;
-                                        }
-                                        if ( pThis->mNeedBreakMismatch )
-                                        {
-                                            ::DebugBreak();
-                                        }
-                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        pThis->responseError( &action, sendedSize );
                                         negative = true;
                                     }
                                 }
@@ -1898,21 +1538,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( false == ret.second )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                             }
@@ -1925,21 +1551,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( false == ret.second )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                             }
@@ -1987,21 +1599,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     if ( false == ret.second )
                                     {
                                         // error
-                                        action.header.size = sizeof(action);
-                                        action.header.mode = kModeAction;
-                                        if ( pThis->mDoBreak )
-                                        {
-                                            action.data.action = kActionBreak;
-                                        }
-                                        else
-                                        {
-                                            action.data.action = kActionNone;
-                                        }
-                                        if ( pThis->mNeedBreakMismatch )
-                                        {
-                                            ::DebugBreak();
-                                        }
-                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        pThis->responseError( &action, sendedSize );
                                         negative = true;
                                     }
                                 }
@@ -2015,21 +1613,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( false == ret.second )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                             }
@@ -2063,21 +1647,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemoryUser.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -2085,21 +1655,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( kOperationUserStaticNew != it->second.top() )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                                 it->second.pop();
@@ -2138,21 +1694,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemoryUser.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -2166,21 +1708,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         // error
-                                        action.header.size = sizeof(action);
-                                        action.header.mode = kModeAction;
-                                        if ( pThis->mDoBreak )
-                                        {
-                                            action.data.action = kActionBreak;
-                                        }
-                                        else
-                                        {
-                                            action.data.action = kActionNone;
-                                        }
-                                        if ( pThis->mNeedBreakMismatch )
-                                        {
-                                            ::DebugBreak();
-                                        }
-                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        pThis->responseError( &action, sendedSize );
                                         negative = true;
                                     }
                                 }
@@ -2220,21 +1748,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemoryUser.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -2242,21 +1756,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 if ( kOperationUserStaticNew != it->second.top() )
                                 {
                                     // error
-                                    action.header.size = sizeof(action);
-                                    action.header.mode = kModeAction;
-                                    if ( pThis->mDoBreak )
-                                    {
-                                        action.data.action = kActionBreak;
-                                    }
-                                    else
-                                    {
-                                        action.data.action = kActionNone;
-                                    }
-                                    if ( pThis->mNeedBreakMismatch )
-                                    {
-                                        ::DebugBreak();
-                                    }
-                                    pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                    pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
                                 it->second.pop();
@@ -2294,21 +1794,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             if ( mapMemoryUser.end() == it )
                             {
                                 // error
-                                action.header.size = sizeof(action);
-                                action.header.mode = kModeAction;
-                                if ( pThis->mDoBreak )
-                                {
-                                    action.data.action = kActionBreak;
-                                }
-                                else
-                                {
-                                    action.data.action = kActionNone;
-                                }
-                                if ( pThis->mNeedBreakMismatch )
-                                {
-                                    ::DebugBreak();
-                                }
-                                pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
                             else
@@ -2322,21 +1808,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         // error
-                                        action.header.size = sizeof(action);
-                                        action.header.mode = kModeAction;
-                                        if ( pThis->mDoBreak )
-                                        {
-                                            action.data.action = kActionBreak;
-                                        }
-                                        else
-                                        {
-                                            action.data.action = kActionNone;
-                                        }
-                                        if ( pThis->mNeedBreakMismatch )
-                                        {
-                                            ::DebugBreak();
-                                        }
-                                        pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
+                                        pThis->responseError( &action, sendedSize );
                                         negative = true;
                                     }
                                 }
