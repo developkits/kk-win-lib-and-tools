@@ -73,9 +73,13 @@ public:
     bool
     setBreakAllocNull( const bool needBreak );
 
+    bool
+    setBreakMismatch( const bool needBreak );
+
 protected:
     bool                mNeedBreakDeallocNull;
     bool                mNeedBreakAllocNull;
+    bool                mNeedBreakMismatch;
 
 private:
     explicit MemoryOperationMismatchServer(const MemoryOperationMismatchServer&);

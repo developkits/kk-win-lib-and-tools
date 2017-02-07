@@ -44,6 +44,9 @@
 #include <map>
 #include <stack>
 
+
+//#define MY_DEBUG_DISP_OPERATION
+
 namespace kk
 {
 
@@ -57,6 +60,7 @@ MemoryOperationMismatchServer::MemoryOperationMismatchServer()
     mDoBreak = true;
     mNeedBreakDeallocNull = false;
     mNeedBreakAllocNull = false;
+    mNeedBreakMismatch = false;
 }
 
 MemoryOperationMismatchServer::~MemoryOperationMismatchServer()
@@ -76,6 +80,7 @@ MemoryOperationMismatchServer::term(void)
     mDoBreak = true;
     mNeedBreakDeallocNull = false;
     mNeedBreakAllocNull = false;
+    mNeedBreakMismatch = false;
 
     return result;
 }
@@ -106,6 +111,15 @@ MemoryOperationMismatchServer::setBreakDeallocNull( const bool needBreak )
 }
 
 
+bool
+MemoryOperationMismatchServer::setBreakMismatch( const bool needBreak )
+{
+    bool oldValue = mNeedBreakMismatch;
+
+    mNeedBreakMismatch = needBreak;
+
+    return oldValue;
+}
 
 
 
@@ -785,6 +799,13 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
             {
                 pThis->mNamedPipe.recv( (char*)&memory, sizeof(memory), recevedSize );
 
+#if defined(MY_DEBUG_DISP_OPERATION)
+                {
+                    char    temp[128];
+                    ::wsprintfA( temp, "%p 0x%04x\n", memory.pointer, memory.funcMemoryOperation );
+                    ::OutputDebugStringA( temp );
+                }
+#endif
                 switch ( memory.funcMemoryOperation )
                 {
                 case kOperationMalloc:
@@ -817,6 +838,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -834,6 +859,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 else
                                 {
                                     action.data.action = kActionNone;
+                                }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
                                 }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
@@ -880,6 +909,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -907,6 +940,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -962,6 +999,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -979,6 +1020,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 else
                                 {
                                     action.data.action = kActionNone;
+                                }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
                                 }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
@@ -1023,6 +1068,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1040,6 +1089,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1115,6 +1168,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1138,6 +1195,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                         else
                                         {
                                             action.data.action = kActionNone;
+                                        }
+                                        if ( pThis->mNeedBreakMismatch )
+                                        {
+                                            ::DebugBreak();
                                         }
                                         pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                         negative = true;
@@ -1167,6 +1228,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1216,6 +1281,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1233,6 +1302,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 else
                                 {
                                     action.data.action = kActionNone;
+                                }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
                                 }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
@@ -1278,6 +1351,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1300,6 +1377,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1361,6 +1442,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     {
                                         action.data.action = kActionNone;
                                     }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
+                                    }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
                                 }
@@ -1381,6 +1466,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1433,6 +1522,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     {
                                         action.data.action = kActionNone;
                                     }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
+                                    }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
                                 }
@@ -1453,6 +1546,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1498,6 +1595,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1515,6 +1616,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1561,6 +1666,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1584,6 +1693,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                         else
                                         {
                                             action.data.action = kActionNone;
+                                        }
+                                        if ( pThis->mNeedBreakMismatch )
+                                        {
+                                            ::DebugBreak();
                                         }
                                         pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                         negative = true;
@@ -1631,6 +1744,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1648,6 +1765,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1693,6 +1814,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1716,6 +1841,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                         else
                                         {
                                             action.data.action = kActionNone;
+                                        }
+                                        if ( pThis->mNeedBreakMismatch )
+                                        {
+                                            ::DebugBreak();
                                         }
                                         pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                         negative = true;
@@ -1770,6 +1899,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     {
                                         action.data.action = kActionNone;
                                     }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
+                                    }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
                                 }
@@ -1792,6 +1925,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1851,6 +1988,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                         {
                                             action.data.action = kActionNone;
                                         }
+                                        if ( pThis->mNeedBreakMismatch )
+                                        {
+                                            ::DebugBreak();
+                                        }
                                         pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                         negative = true;
                                     }
@@ -1874,6 +2015,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1919,6 +2064,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -1936,6 +2085,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -1986,6 +2139,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -2009,6 +2166,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                         else
                                         {
                                             action.data.action = kActionNone;
+                                        }
+                                        if ( pThis->mNeedBreakMismatch )
+                                        {
+                                            ::DebugBreak();
                                         }
                                         pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                         negative = true;
@@ -2060,6 +2221,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -2077,6 +2242,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     else
                                     {
                                         action.data.action = kActionNone;
+                                    }
+                                    if ( pThis->mNeedBreakMismatch )
+                                    {
+                                        ::DebugBreak();
                                     }
                                     pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                     negative = true;
@@ -2126,6 +2295,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     action.data.action = kActionNone;
                                 }
+                                if ( pThis->mNeedBreakMismatch )
+                                {
+                                    ::DebugBreak();
+                                }
                                 pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                 negative = true;
                             }
@@ -2149,6 +2322,10 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                         else
                                         {
                                             action.data.action = kActionNone;
+                                        }
+                                        if ( pThis->mNeedBreakMismatch )
+                                        {
+                                            ::DebugBreak();
                                         }
                                         pThis->mNamedPipe.send( (char*)&action, sizeof(action), sendedSize );
                                         negative = true;
