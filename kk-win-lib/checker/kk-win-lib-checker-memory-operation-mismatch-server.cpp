@@ -110,6 +110,15 @@ MemoryOperationMismatchServer::setBreakDeallocNull( const bool needBreak )
     return oldValue;
 }
 
+bool
+MemoryOperationMismatchServer::setBreakAllocNull( const bool needBreak )
+{
+    bool oldValue = mNeedBreakAllocNull;
+
+    mNeedBreakAllocNull = needBreak;
+
+    return oldValue;
+}
 
 bool
 MemoryOperationMismatchServer::setBreakMismatch( const bool needBreak )
