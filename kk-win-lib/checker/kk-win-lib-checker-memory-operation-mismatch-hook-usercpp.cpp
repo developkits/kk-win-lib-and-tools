@@ -47,6 +47,8 @@ namespace kk
 namespace checker
 {
 
+namespace hookusercpp
+{
 
 static
 DWORD64
@@ -439,25 +441,30 @@ unhookUserCPP( void )
 
 
 
+} // namespace hookusercpp
+
+
+
+
 bool
 hookMemoryOperationMismatchUserCPP( const HMODULE hModule, MemoryOperationMismatchClient* pMOM )
 {
     bool result = true;
     {
-        const bool bRet = pMOM->getUserStaticFunc( sUserStaticFunc );
+        const bool bRet = pMOM->getUserStaticFunc( hookusercpp::sUserStaticFunc );
         if ( !bRet )
         {
             result = false;
         }
         else
         {
-            sMemoryOperationMismatch = pMOM;
+            hookusercpp::sMemoryOperationMismatch = pMOM;
         }
     }
 
     if ( result )
     {
-        const bool bRet = hookUserCPP( hModule );
+        const bool bRet = hookusercpp::hookUserCPP( hModule );
         if ( !bRet )
         {
             result = false;
@@ -476,14 +483,14 @@ unhookMemoryOperationMismatchUserCPP( void )
 {
     bool result = true;
     {
-        const bool bRet = unhookUserCPP();
+        const bool bRet = hookusercpp::unhookUserCPP();
         if ( !bRet )
         {
             result = false;
         }
     }
 
-    sMemoryOperationMismatch = NULL;
+    hookusercpp::sMemoryOperationMismatch = NULL;
 
     return result;
 }

@@ -47,6 +47,9 @@ namespace kk
 namespace checker
 {
 
+namespace hookiat
+{
+
 static
 HMODULE
 sModule = NULL;
@@ -421,99 +424,99 @@ hookCRTbyIAT( const HMODULE hModule )
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationMalloc] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationMalloc]);
-                    pfn_malloc = reinterpret_cast<kk::checker::PFN_malloc>(*pIAT);
+                    pfn_malloc = reinterpret_cast<kk::checker::hookiat::PFN_malloc>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_malloc);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationFree] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationFree]);
-                    pfn_free= reinterpret_cast<kk::checker::PFN_free>(*pIAT);
+                    pfn_free= reinterpret_cast<kk::checker::hookiat::PFN_free>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_free);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCalloc] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationCalloc]);
-                    pfn_calloc = reinterpret_cast<kk::checker::PFN_calloc>(*pIAT);
+                    pfn_calloc = reinterpret_cast<kk::checker::hookiat::PFN_calloc>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_calloc);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationRealloc] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationRealloc]);
-                    pfn_realloc = reinterpret_cast<kk::checker::PFN_realloc>(*pIAT);
+                    pfn_realloc = reinterpret_cast<kk::checker::hookiat::PFN_realloc>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_realloc);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationStrdup] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationStrdup]);
-                    pfn_strdup = reinterpret_cast<kk::checker::PFN_strdup>(*pIAT);
+                    pfn_strdup = reinterpret_cast<kk::checker::hookiat::PFN_strdup>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_strdup);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationWcsdup] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationWcsdup]);
-                    pfn_wcsdup = reinterpret_cast<kk::checker::PFN_wcsdup>(*pIAT);
+                    pfn_wcsdup = reinterpret_cast<kk::checker::hookiat::PFN_wcsdup>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_wcsdup);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationReCalloc] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationReCalloc]);
-                    pfn_recalloc = reinterpret_cast<kk::checker::PFN_recalloc>(*pIAT);
+                    pfn_recalloc = reinterpret_cast<kk::checker::hookiat::PFN_recalloc>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_recalloc);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationExpand] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationExpand]);
-                    pfn_expand = reinterpret_cast<kk::checker::PFN_expand>(*pIAT);
+                    pfn_expand = reinterpret_cast<kk::checker::hookiat::PFN_expand>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_expand);
                 }
 
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNew]);
-                    pfn_new = reinterpret_cast<kk::checker::PFN_new>(*pIAT);
+                    pfn_new = reinterpret_cast<kk::checker::hookiat::PFN_new>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_new);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationDelete] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationDelete]);
-                    pfn_delete = reinterpret_cast<kk::checker::PFN_delete>(*pIAT);
+                    pfn_delete = reinterpret_cast<kk::checker::hookiat::PFN_delete>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_delete);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNewArray] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationNewArray]);
-                    pfn_new_array = reinterpret_cast<kk::checker::PFN_new_array>(*pIAT);
+                    pfn_new_array = reinterpret_cast<kk::checker::hookiat::PFN_new_array>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_new_array);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationDeleteArray] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationDeleteArray]);
-                    pfn_delete_array = reinterpret_cast<kk::checker::PFN_delete_array>(*pIAT);
+                    pfn_delete_array = reinterpret_cast<kk::checker::hookiat::PFN_delete_array>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_delete_array);
                 }
 
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationAlignedMalloc] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationAlignedMalloc]);
-                    pfn_aligned_malloc = reinterpret_cast<kk::checker::PFN_aligned_malloc>(*pIAT);
+                    pfn_aligned_malloc = reinterpret_cast<kk::checker::hookiat::PFN_aligned_malloc>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_aligned_malloc);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationAlignedFree] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationAlignedFree]);
-                    pfn_aligned_free= reinterpret_cast<kk::checker::PFN_aligned_free>(*pIAT);
+                    pfn_aligned_free= reinterpret_cast<kk::checker::hookiat::PFN_aligned_free>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_aligned_free);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationAlignedReCalloc] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationAlignedReCalloc]);
-                    pfn_aligned_recalloc = reinterpret_cast<kk::checker::PFN_aligned_recalloc>(*pIAT);
+                    pfn_aligned_recalloc = reinterpret_cast<kk::checker::hookiat::PFN_aligned_recalloc>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_aligned_recalloc);
                 }
                 if ( 0 != sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationAlignedRealloc] )
                 {
                     size_t* pIAT = reinterpret_cast<size_t*>(p + sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationAlignedRealloc]);
-                    pfn_aligned_realloc = reinterpret_cast<kk::checker::PFN_aligned_realloc>(*pIAT);
+                    pfn_aligned_realloc = reinterpret_cast<kk::checker::hookiat::PFN_aligned_realloc>(*pIAT);
                     *pIAT = reinterpret_cast<size_t>(my_aligned_realloc);
                 }
 
@@ -842,32 +845,38 @@ unhookCRTbyIAT( void )
 }
 
 
+
+} // namespace hookiat
+
+
+
+
 bool
 hookMemoryOperationMismatchIAT( const HMODULE hModule, MemoryOperationMismatchClient* pMOM )
 {
     bool result = true;
     {
-        const bool bRet = pMOM->getCRTOffsetIAT( sCRTOffsetIAT );
+        const bool bRet = pMOM->getCRTOffsetIAT( hookiat::sCRTOffsetIAT );
         if ( !bRet )
         {
             result = false;
         }
         else
         {
-            sMemoryOperationMismatch = pMOM;
+            hookiat::sMemoryOperationMismatch = pMOM;
         }
     }
 
     if ( result )
     {
-        const bool bRet = hookCRTbyIAT( hModule );
+        const bool bRet = hookiat::hookCRTbyIAT( hModule );
         if ( !bRet )
         {
             result = false;
         }
         else
         {
-            sModule = hModule;
+            hookiat::sModule = hModule;
         }
     }
 
@@ -880,15 +889,15 @@ unhookMemoryOperationMismatchIAT( void )
 {
     bool result = true;
     {
-        const bool bRet = unhookCRTbyIAT();
+        const bool bRet = hookiat::unhookCRTbyIAT();
         if ( !bRet )
         {
             result = false;
         }
     }
 
-    sMemoryOperationMismatch = NULL;
-    sModule = NULL;
+    hookiat::sMemoryOperationMismatch = NULL;
+    hookiat::sModule = NULL;
 
     return result;
 }

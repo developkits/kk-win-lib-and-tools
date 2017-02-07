@@ -46,6 +46,8 @@ namespace kk
 namespace checker
 {
 
+namespace hookcrtcpp
+{
 
 static
 DWORD64
@@ -266,26 +268,30 @@ unhookCRTCPP( void )
 }
 
 
+} // namespace hookcrtcpp
+
+
+
 
 bool
 hookMemoryOperationMismatchCRTCPP( const HMODULE hModule, MemoryOperationMismatchClient* pMOM )
 {
     bool result = true;
     {
-        const bool bRet = pMOM->getCRTStaticFunc( sCRTStaticFunc );
+        const bool bRet = pMOM->getCRTStaticFunc( hookcrtcpp::sCRTStaticFunc );
         if ( !bRet )
         {
             result = false;
         }
         else
         {
-            sMemoryOperationMismatch = pMOM;
+            hookcrtcpp::sMemoryOperationMismatch = pMOM;
         }
     }
 
     if ( result )
     {
-        const bool bRet = hookCRTCPP( hModule );
+        const bool bRet = hookcrtcpp::hookCRTCPP( hModule );
         if ( !bRet )
         {
             result = false;
@@ -304,14 +310,14 @@ unhookMemoryOperationMismatchCRTCPP( void )
 {
     bool result = true;
     {
-        const bool bRet = unhookCRTCPP();
+        const bool bRet = hookcrtcpp::unhookCRTCPP();
         if ( !bRet )
         {
             result = false;
         }
     }
 
-    sMemoryOperationMismatch = NULL;
+    hookcrtcpp::sMemoryOperationMismatch = NULL;
 
     return result;
 }

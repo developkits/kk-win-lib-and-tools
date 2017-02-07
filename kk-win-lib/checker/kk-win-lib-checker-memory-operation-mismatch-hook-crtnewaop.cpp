@@ -46,6 +46,9 @@ namespace kk
 namespace checker
 {
 
+namespace hookcrtnewaop
+{
+
 static
 DWORD64
 sCRTOffsetIAT[MemoryOperationMismatch::kIndexOperationMAX];
@@ -134,36 +137,42 @@ unhookCRTNewAOP( void )
 }
 
 
+
+} // namespace hookcrtnewaop
+
+
+
+
 bool
 hookMemoryOperationMismatchCRTNewAOP( const HMODULE hModule, MemoryOperationMismatchClient* pMOM )
 {
     bool result = true;
     {
-        const bool bRet = pMOM->getCRTOffsetIAT( sCRTOffsetIAT );
+        const bool bRet = pMOM->getCRTOffsetIAT( hookcrtnewaop::sCRTOffsetIAT );
         if ( !bRet )
         {
             result = false;
         }
         else
         {
-            sMemoryOperationMismatch = pMOM;
+            hookcrtnewaop::sMemoryOperationMismatch = pMOM;
         }
     }
     {
-        const bool bRet = pMOM->getCRTStaticFunc( sCRTStaticFunc );
+        const bool bRet = pMOM->getCRTStaticFunc( hookcrtnewaop::sCRTStaticFunc );
         if ( !bRet )
         {
             result = false;
         }
         else
         {
-            sMemoryOperationMismatch = pMOM;
+            hookcrtnewaop::sMemoryOperationMismatch = pMOM;
         }
     }
 
     if ( result )
     {
-        const bool bRet = hookCRTNewAOP( hModule );
+        const bool bRet = hookcrtnewaop::hookCRTNewAOP( hModule );
         if ( !bRet )
         {
             result = false;
@@ -182,14 +191,14 @@ unhookMemoryOperationMismatchCRTNewAOP( void )
 {
     bool result = true;
     {
-        const bool bRet = unhookCRTNewAOP();
+        const bool bRet = hookcrtnewaop::unhookCRTNewAOP();
         if ( !bRet )
         {
             result = false;
         }
     }
 
-    sMemoryOperationMismatch = NULL;
+    hookcrtnewaop::sMemoryOperationMismatch = NULL;
 
     return result;
 }
