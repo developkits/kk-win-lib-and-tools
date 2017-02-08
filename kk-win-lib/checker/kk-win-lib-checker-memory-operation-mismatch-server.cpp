@@ -872,9 +872,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
                             {
-                                // error
-                                pThis->responseError( &action, sendedSize );
-                                negative = true;
+                                if ( false == negative )
+                                {
+                                    // error
+                                    pThis->responseError( &action, sendedSize );
+                                    negative = true;
+                                }
                             }
                         }
 
@@ -977,9 +980,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
                             {
-                                // error
-                                pThis->responseError( &action, sendedSize );
-                                negative = true;
+                                if ( false == negative )
+                                {
+                                    // error
+                                    pThis->responseError( &action, sendedSize );
+                                    negative = true;
+                                }
                             }
                         }
 
@@ -1151,9 +1157,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
                             {
-                                // error
-                                pThis->responseError( &action, sendedSize );
-                                negative = true;
+                                if ( false == negative )
+                                {
+                                    // error
+                                    pThis->responseError( &action, sendedSize );
+                                    negative = true;
+                                }
                             }
                         }
 
