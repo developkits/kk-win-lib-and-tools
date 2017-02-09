@@ -47,6 +47,8 @@
 
 //#define MY_DEBUG_DISP_OPERATION
 
+//#define MY_CHECK_PRE_INSERT
+
 namespace kk
 {
 
@@ -241,6 +243,127 @@ MemoryOperationMismatchServer::responseError( void* pBuff, size_t& sendedSize )
 }
 
 
+static
+const char*
+toString(MemoryOperationMismatchServer::enumMemoryOperation enmOperation)
+{
+    const char* result = "";
+    switch ( enmOperation )
+    {
+    case MemoryOperationMismatchServer::kOperationMalloc:
+        result = "malloc";
+        break;
+    case MemoryOperationMismatchServer::kOperationFree:
+        result = "free";
+        break;
+    case MemoryOperationMismatchServer::kOperationCalloc:
+        result = "calloc";
+        break;
+    case MemoryOperationMismatchServer::kOperationRealloc:
+        result = "realloc";
+        break;
+    case MemoryOperationMismatchServer::kOperationReallocFree:
+        result = "realloc(free)";
+        break;
+    case MemoryOperationMismatchServer::kOperationStrdup:
+        result = "strdup";
+        break;
+    case MemoryOperationMismatchServer::kOperationWcsdup:
+        result = "wcsdup";
+        break;
+    case MemoryOperationMismatchServer::kOperationReCalloc:
+        result = "recalloc";
+        break;
+    case MemoryOperationMismatchServer::kOperationReCallocFree:
+        result = "recalloc(free)";
+        break;
+    case MemoryOperationMismatchServer::kOperationExpand:
+        result = "expand";
+        break;
+    case MemoryOperationMismatchServer::kOperationExpandFree:
+        result = "expand(free)";
+        break;
+
+    case MemoryOperationMismatchServer::kOperationNew:
+        result = "new";
+        break;
+    case MemoryOperationMismatchServer::kOperationDelete:
+        result = "delete";
+        break;
+    case MemoryOperationMismatchServer::kOperationNewArray:
+        result = "new[]";
+        break;
+    case MemoryOperationMismatchServer::kOperationDeleteArray:
+        result = "delete[]";
+        break;
+
+    case MemoryOperationMismatchServer::kOperationAlignedMalloc:
+        result = "_aglined_malloc";
+        break;
+    case MemoryOperationMismatchServer::kOperationAlignedFree:
+        result = "_aligned_free";
+        break;
+    case MemoryOperationMismatchServer::kOperationAlignedRealloc:
+        result = "_aligned_realloc";
+        break;
+    case MemoryOperationMismatchServer::kOperationAlignedRecalloc:
+        result = "_aligned_recalloc";
+        break;
+    case MemoryOperationMismatchServer::kOperationAlignedReallocFree:
+        result = "_aligned_realloc(free)";
+        break;
+    case MemoryOperationMismatchServer::kOperationAlignedRecallocFree:
+        result = "_aglined_recalloc(free)";
+        break;
+
+
+    case MemoryOperationMismatchServer::kOperationCRTStaticNew:
+        result = "CRTnew";
+        break;
+    case MemoryOperationMismatchServer::kOperationCRTStaticDelete:
+        result = "CRTdelete";
+        break;
+    case MemoryOperationMismatchServer::kOperationCRTStaticNewArray:
+        result = "CRTnew[]";
+        break;
+    case MemoryOperationMismatchServer::kOperationCRTStaticDeleteArray:
+        result = "CRTdelete[]";
+        break;
+
+    case MemoryOperationMismatchServer::kOperationCRTStaticDeleteSize:
+        result = "CRTdelete(size)";
+        break;
+    case MemoryOperationMismatchServer::kOperationCRTStaticDeleteArraySize:
+        result = "CRTdelete[](size)";
+        break;
+
+    case MemoryOperationMismatchServer::kOperationUserStaticNew:
+        result = "UserNew";
+        break;
+    case MemoryOperationMismatchServer::kOperationUserStaticDelete:
+        result = "UserDelete";
+        break;
+    case MemoryOperationMismatchServer::kOperationUserStaticNewArray:
+        result = "UserNew[]";
+        break;
+    case MemoryOperationMismatchServer::kOperationUserStaticDeleteArray:
+        result = "UserDelete[]";
+        break;
+
+    case MemoryOperationMismatchServer::kOperationUserStaticDeleteSize:
+        result = "UserDelete(size)";
+        break;
+    case MemoryOperationMismatchServer::kOperationUserStaticDeleteArraySize:
+        result = "UserDelete[](size)";
+        break;
+
+    default:
+        result = "";
+        break;
+    }
+
+    return result;
+}
 
 
 
@@ -836,6 +959,9 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
             {
                 pThis->mNamedPipe.recv( (char*)&memory, sizeof(memory), recevedSize );
 
+                const MemoryOperationMismatch::enumMemoryOperation enmFuncMemoryOperation =
+                    static_cast<const MemoryOperationMismatch::enumMemoryOperation>(memory.funcMemoryOperation);
+
 #if defined(MY_DEBUG_DISP_OPERATION)
                 {
                     char    temp[128];
@@ -861,19 +987,33 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         }
                         else
                         {
+#if defined(MY_CHECK_PRE_INSERT)
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() != it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not deallocate. call '%s' allocate '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation), toString(it->second) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
+#endif // defined(MY_CHECK_PRE_INSERT)
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
                             {
                                 if ( false == negative )
                                 {
+                                    {
+                                        char    temp[256];
+                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::OutputDebugStringA( temp );
+                                    }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
@@ -910,6 +1050,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -928,6 +1074,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     )
                                 )
                                 {
+                                    {
+                                        char    temp[256];
+                                        ::wsprintfA( temp, "%p mismatch. call '%s' allocate '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation), toString(it->second) );
+                                        ::OutputDebugStringA( temp );
+                                    }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
@@ -969,19 +1121,33 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         }
                         else
                         {
+#if defined(MY_CHECK_PRE_INSERT)
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() != it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not deallocate. call '%s' allocate '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation), toString(it->second) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
+#endif // defined(MY_CHECK_PRE_INSERT)
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
                             {
                                 if ( false == negative )
                                 {
+                                    {
+                                        char    temp[256];
+                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::OutputDebugStringA( temp );
+                                    }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
@@ -1016,6 +1182,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1078,6 +1250,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1146,19 +1324,33 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         }
                         else
                         {
+#if defined(MY_CHECK_PRE_INSERT)
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() != it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not deallocate. call '%s' allocate '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation), toString(it->second) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
                             }
+#endif // defined(MY_CHECK_PRE_INSERT)
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
                             {
                                 if ( false == negative )
                                 {
+                                    {
+                                        char    temp[256];
+                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::OutputDebugStringA( temp );
+                                    }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
@@ -1194,6 +1386,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1268,6 +1466,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                                 if ( false == ret.second )
                                 {
+                                    {
+                                        char    temp[256];
+                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::OutputDebugStringA( temp );
+                                    }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
@@ -1320,6 +1524,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                                 if ( false == ret.second )
                                 {
+                                    {
+                                        char    temp[256];
+                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::OutputDebugStringA( temp );
+                                    }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
@@ -1354,6 +1564,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1397,6 +1613,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1447,6 +1669,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1489,6 +1717,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecord::iterator it = mapMemory.find( memory.pointer );
                             if ( mapMemory.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1655,6 +1889,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecordUser::iterator it = mapMemoryUser.find( memory.pointer );
                             if ( mapMemoryUser.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1702,6 +1942,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecordUser::iterator it = mapMemoryUser.find( memory.pointer );
                             if ( mapMemoryUser.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1756,6 +2002,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecordUser::iterator it = mapMemoryUser.find( memory.pointer );
                             if ( mapMemoryUser.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
@@ -1802,6 +2054,12 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                             mapRecordUser::iterator it = mapMemoryUser.find( memory.pointer );
                             if ( mapMemoryUser.end() == it )
                             {
+                                {
+                                    char    temp[256];
+                                    ::wsprintfA( temp, "%p not allocated. call '%s'\n"
+                                        , memory.pointer, toString(enmFuncMemoryOperation) );
+                                    ::OutputDebugStringA( temp );
+                                }
                                 // error
                                 pThis->responseError( &action, sendedSize );
                                 negative = true;
