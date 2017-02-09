@@ -47,8 +47,6 @@
 
 //#define MY_DEBUG_DISP_OPERATION
 
-//#define MY_CHECK_PRE_INSERT
-
 namespace kk
 {
 
@@ -987,21 +985,6 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         }
                         else
                         {
-#if defined(MY_CHECK_PRE_INSERT)
-                            mapRecord::iterator it = mapMemory.find( memory.pointer );
-                            if ( mapMemory.end() != it )
-                            {
-                                {
-                                    char    temp[256];
-                                    ::wsprintfA( temp, "%p not deallocate. call '%s' allocate '%s'\n"
-                                        , memory.pointer, toString(enmFuncMemoryOperation), toString(it->second) );
-                                    ::OutputDebugStringA( temp );
-                                }
-                                // error
-                                pThis->responseError( &action, sendedSize );
-                                negative = true;
-                            }
-#endif // defined(MY_CHECK_PRE_INSERT)
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
@@ -1010,14 +993,17 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     {
                                         char    temp[256];
-                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
-                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::wsprintfA( temp, "%p already alloc. call '%s' allocate '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation), toString(ret.first->second) );
                                         ::OutputDebugStringA( temp );
                                     }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
+
+                                // overwrite
+                                ret.first->second = enmFuncMemoryOperation;
                             }
                         }
 
@@ -1121,21 +1107,6 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         }
                         else
                         {
-#if defined(MY_CHECK_PRE_INSERT)
-                            mapRecord::iterator it = mapMemory.find( memory.pointer );
-                            if ( mapMemory.end() != it )
-                            {
-                                {
-                                    char    temp[256];
-                                    ::wsprintfA( temp, "%p not deallocate. call '%s' allocate '%s'\n"
-                                        , memory.pointer, toString(enmFuncMemoryOperation), toString(it->second) );
-                                    ::OutputDebugStringA( temp );
-                                }
-                                // error
-                                pThis->responseError( &action, sendedSize );
-                                negative = true;
-                            }
-#endif // defined(MY_CHECK_PRE_INSERT)
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
@@ -1145,13 +1116,16 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                     {
                                         char    temp[256];
                                         ::wsprintfA( temp, "%p already alloc. call '%s'\n"
-                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                            , memory.pointer, toString(enmFuncMemoryOperation), toString(ret.first->second) );
                                         ::OutputDebugStringA( temp );
                                     }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
+
+                                // overwrite
+                                ret.first->second = enmFuncMemoryOperation;
                             }
                         }
 
@@ -1324,21 +1298,6 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                         }
                         else
                         {
-#if defined(MY_CHECK_PRE_INSERT)
-                            mapRecord::iterator it = mapMemory.find( memory.pointer );
-                            if ( mapMemory.end() != it )
-                            {
-                                {
-                                    char    temp[256];
-                                    ::wsprintfA( temp, "%p not deallocate. call '%s' allocate '%s'\n"
-                                        , memory.pointer, toString(enmFuncMemoryOperation), toString(it->second) );
-                                    ::OutputDebugStringA( temp );
-                                }
-                                // error
-                                pThis->responseError( &action, sendedSize );
-                                negative = true;
-                            }
-#endif // defined(MY_CHECK_PRE_INSERT)
                             pairRecord  pair(memory.pointer, (enumMemoryOperation)memory.funcMemoryOperation);
                             std::pair<mapRecord::iterator,bool> ret = mapMemory.insert( pair );
                             if ( false == ret.second )
@@ -1347,14 +1306,16 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     {
                                         char    temp[256];
-                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
-                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::wsprintfA( temp, "%p already alloc. call '%s' allocate '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation), toString(ret.first->second) );
                                         ::OutputDebugStringA( temp );
                                     }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
                                 }
+                                // overwrite
+                                ret.first->second = enmFuncMemoryOperation;
                             }
                         }
 
@@ -1468,13 +1429,16 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     {
                                         char    temp[256];
-                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
-                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::wsprintfA( temp, "%p already alloc. call '%s' allocate '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation), toString(ret.first->second) );
                                         ::OutputDebugStringA( temp );
                                     }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
+
+                                    // overwrite
+                                    ret.first->second = enmFuncMemoryOperation;
                                 }
                             }
                         }
@@ -1526,13 +1490,16 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     {
                                         char    temp[256];
-                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
-                                            , memory.pointer, toString(enmFuncMemoryOperation) );
+                                        ::wsprintfA( temp, "%p already alloc. call '%s' allocate '%s'\n"
+                                            , memory.pointer, toString(enmFuncMemoryOperation), toString(ret.first->second) );
                                         ::OutputDebugStringA( temp );
                                     }
                                     // error
                                     pThis->responseError( &action, sendedSize );
                                     negative = true;
+
+                                    // overwrite
+                                    ret.first->second = enmFuncMemoryOperation;
                                 }
                             }
                         }
