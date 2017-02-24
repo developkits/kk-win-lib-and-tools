@@ -1115,7 +1115,7 @@ MemoryOperationMismatchServer::threadServer( void* pVoid )
                                 {
                                     {
                                         char    temp[256];
-                                        ::wsprintfA( temp, "%p already alloc. call '%s'\n"
+                                        ::wsprintfA( temp, "%p already alloc. call '%s' allocate '%s'\n"
                                             , memory.pointer, toString(enmFuncMemoryOperation), toString(ret.first->second) );
                                         ::OutputDebugStringA( temp );
                                     }
